@@ -1,16 +1,165 @@
-// Update this page (the content is just a fallback if you fail to update the page)
+import { useState } from "react";
+import { Link } from "react-router-dom";
+import { AppLayout } from "@/components/layout/AppLayout";
+import { MatchCard } from "@/components/MatchCard";
+import { promoCards, featuredMatches, liveMatches } from "@/data/mockData";
+import { Globe, Tv, Share2, Plane, Trophy, MoreHorizontal } from "lucide-react";
 
-// IMPORTANT: Fully REPLACE this with your own code
-const PlaceholderIndex = () => {
-  // PLACEHOLDER: Replace this entire return statement with the user's app.
-  // The inline background color is intentionally not part of the design system.
+const quickLinks = [
+  { label: "All Sports", icon: Globe, to: "/menu" },
+  { label: "Live", icon: Tv, to: "/live" },
+  { label: "Load Code", icon: Share2, to: "/load-code" },
+  { label: "Aviator", icon: Plane, to: "/games", accent: true },
+  { label: "Virtuals", icon: Trophy, to: "/games" },
+  { label: "More", icon: MoreHorizontal, to: "/menu" },
+];
+
+const tabs = ["Featured", "Matches", "Games", "Codes", "Virtuals"];
+const leagueChips = ["Today's Football", "Football In Next 3 Hours", "Champions League", "Europa League", "Premier League"];
+
+const Index = () => {
+  const [tab, setTab] = useState("Featured");
+  const [leagueIdx, setLeagueIdx] = useState(0);
+
   return (
-    <div className="flex min-h-screen items-center justify-center" style={{ backgroundColor: '#fcfbf8' }}>
-      <img data-lovable-blank-page-placeholder="REMOVE_THIS" src="/placeholder.svg" alt="Your app will live here!" />
-    </div>
+    <AppLayout>
+      {/* Promo carousel */}
+      <section className="px-4 py-3 overflow-x-auto scrollbar-hide">
+        <div className="flex gap-3">
+          {promoCards.map((p) => (
+            <div
+              key={p.id}
+              className={`relative shrink-0 w-32 h-24 rounded-xl bg-gradient-to-br ${p.color} shadow-card overflow-hidden flex items-end p-2`}
+            >
+              <div className="absolute top-1 right-2 text-3xl">{p.emoji}</div>
+              <span className="text-white text-xs font-bold leading-tight drop-shadow">{p.title}</span>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* Quick links */}
+      <section className="bg-card px-2 py-3 grid grid-cols-6 gap-1">
+        {quickLinks.map(({ label, icon: Icon, to, accent }) => (
+          <Link key={label} to={to} className="flex flex-col items-center gap-1 text-foreground">
+            <div className={`w-10 h-10 rounded-full flex items-center justify-center ${accent ? "text-primary" : "text-foreground"}`}>
+              <Icon className="w-6 h-6" />
+            </div>
+            <span className="text-[10px] font-medium text-center leading-tight">{label}</span>
+          </Link>
+        ))}
+      </section>
+
+      {/* League chips */}
+      <section className="px-3 py-2 overflow-x-auto scrollbar-hide bg-card border-t border-border">
+        <div className="flex gap-2">
+          {leagueChips.map((c, i) => (
+            <button
+              key={c}
+              onClick={() => setLeagueIdx(i)}
+              className={`shrink-0 px-3 py-2 rounded text-xs font-bold border-t-2 ${
+                leagueIdx === i ? "border-primary bg-secondary text-foreground" : "border-transparent bg-secondary/50 text-muted-foreground"
+              }`}
+            >
+              {c.toUpperCase()}
+            </button>
+          ))}
+        </div>
+      </section>
+
+      {/* Tabs */}
+      <section className="bg-card px-4 pt-4 pb-2 flex items-center gap-4 border-t border-border overflow-x-auto scrollbar-hide">
+        {tabs.map((t) => (
+          <button
+            key={t}
+            onClick={() => setTab(t)}
+            className={`pb-2 text-base font-bold whitespace-nowrap relative ${
+              tab === t ? "text-success" : "text-muted-foreground"
+            }`}
+          >
+            {t}
+            {t === "Featured" && <span className="ml-2 text-foreground">|</span>}
+          </button>
+        ))}
+      </section>
+
+      {/* Match list */}
+      <section className="px-3 py-3 space-y-3">
+        <div className="flex gap-2 overflow-x-auto scrollbar-hide">
+          {["UEFA Champions League", "Europa", "Conference", "Libertadores"].map((l, i) => (
+            <button
+              key={l}
+              className={`shrink-0 px-3 py-2 rounded-full text-xs font-bold border ${
+                i === 0 ? "border-foreground bg-card text-foreground" : "border-border bg-card text-muted-foreground"
+              }`}
+            >
+              {l}
+            </button>
+          ))}
+        </div>
+
+        {featuredMatches.map((m) => (
+          <MatchCard key={m.id} match={m} />
+        ))}
+      </section>
+
+      {/* Live strip */}
+      <section className="bg-surface-dark text-surface-dark-foreground mt-2 pt-4 pb-6">
+        <div className="px-4 flex items-center gap-3 overflow-x-auto scrollbar-hide">
+          <span className="text-xl font-bold">Live</span>
+          <span className="text-white/40">|</span>
+          {["Football", "vFootball", "Basketball", "Tennis", "eFootball"].map((s, i) => (
+            <button
+              key={s}
+              className={`text-base font-bold whitespace-nowrap ${i === 0 ? "text-success" : "text-white/80"}`}
+            >
+              {s}
+            </button>
+          ))}
+        </div>
+        <div className="px-4 mt-3 flex items-center gap-4 overflow-x-auto scrollbar-hide border-b border-white/10 pb-2">
+          {["1X2", "Over/Under", "DC", "1st Half O/U"].map((m, i) => (
+            <button
+              key={m}
+              className={`text-sm font-bold whitespace-nowrap pb-2 ${i === 0 ? "text-success border-b-2 border-success" : "text-white/70"}`}
+            >
+              {m}
+            </button>
+          ))}
+        </div>
+        <div className="px-3 mt-3 space-y-2">
+          {liveMatches.map((m) => (
+            <div key={m.id} className="bg-surface-dark-muted rounded-lg overflow-hidden">
+              <div className="flex items-center justify-between px-3 py-2 text-xs">
+                <div className="flex items-center gap-2 min-w-0">
+                  {m.hot && <span className="bg-primary text-primary-foreground px-1.5 py-0.5 rounded text-[10px] font-bold">HOT 🔥</span>}
+                  <span className="text-success font-bold">{m.minute}</span>
+                  <span className="truncate text-white/70">{m.league}</span>
+                </div>
+              </div>
+              <div className="grid grid-cols-[1fr_auto] items-center px-3 py-2">
+                <div className="space-y-0.5">
+                  <div className="text-sm font-medium">{m.home}</div>
+                  <div className="text-sm font-medium">{m.away}</div>
+                </div>
+                <div className="text-right text-success font-bold text-sm">
+                  <div>{m.score?.split(" - ")[0]}</div>
+                  <div>{m.score?.split(" - ")[1]}</div>
+                </div>
+              </div>
+              <div className="grid grid-cols-3 gap-1 p-1">
+                {[m.odds.home, m.odds.draw, m.odds.away].map((o, i) => (
+                  <div key={i} className="bg-white/5 text-success text-center py-2 rounded font-bold text-sm">
+                    {o.toFixed(2)}
+                  </div>
+                ))}
+              </div>
+            </div>
+          ))}
+        </div>
+      </section>
+    </AppLayout>
   );
 };
-
-const Index = PlaceholderIndex;
 
 export default Index;

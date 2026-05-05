@@ -1,24 +1,15 @@
-import { useLocation } from "react-router-dom";
-import { useEffect } from "react";
+import { Link } from "react-router-dom";
+import { Crown } from "lucide-react";
 
-const NotFound = () => {
-  const location = useLocation();
-
-  useEffect(() => {
-    console.error("404 Error: User attempted to access non-existent route:", location.pathname);
-  }, [location.pathname]);
-
-  return (
-    <div className="flex min-h-screen items-center justify-center bg-muted">
-      <div className="text-center">
-        <h1 className="mb-4 text-4xl font-bold">404</h1>
-        <p className="mb-4 text-xl text-muted-foreground">Oops! Page not found</p>
-        <a href="/" className="text-primary underline hover:text-primary/90">
-          Return to Home
-        </a>
-      </div>
-    </div>
-  );
-};
+const NotFound = () => (
+  <div className="min-h-screen bg-gradient-dark text-white flex flex-col items-center justify-center px-6 text-center">
+    <Crown className="w-16 h-16 text-gold mb-4" />
+    <h1 className="text-5xl font-extrabold">404</h1>
+    <p className="mt-2 text-white/70">This page doesn't exist on CrownBet.</p>
+    <Link to="/" className="mt-6 px-6 py-3 bg-gradient-primary rounded-lg font-bold">
+      Back to Home
+    </Link>
+  </div>
+);
 
 export default NotFound;
