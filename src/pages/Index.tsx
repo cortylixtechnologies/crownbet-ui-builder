@@ -102,7 +102,7 @@ const Index = () => {
             <Link
               key={l}
               to={`/league/${slugify(l)}`}
-              className={`shrink-0 px-3 py-2 rounded-full text-xs font-bold border ${
+              className={`shrink-0 px-3 py-2 rounded-full text-xs font-bold border transition-colors hover:border-primary hover:text-primary active:scale-95 ${
                 i === 0 ? "border-foreground bg-card text-foreground" : "border-border bg-card text-muted-foreground"
               }`}
             >
