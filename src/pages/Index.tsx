@@ -14,7 +14,13 @@ const quickLinks = [
   { label: "More", icon: MoreHorizontal, to: "/menu" },
 ];
 
-const tabs = ["Featured", "Matches", "Games", "Codes", "Virtuals"];
+const tabs: { label: string; to: string }[] = [
+  { label: "Featured", to: "/" },
+  { label: "Matches", to: "/menu" },
+  { label: "Games", to: "/games" },
+  { label: "Codes", to: "/load-code" },
+  { label: "Virtuals", to: "/virtuals" },
+];
 const leagueChips = ["Today's Football", "Football In Next 3 Hours", "Champions League", "Europa League", "Premier League"];
 
 const Index = () => {
