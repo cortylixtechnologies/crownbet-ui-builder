@@ -48,7 +48,11 @@ const Index = () => {
       {/* Quick links */}
       <section className="bg-card px-2 py-3 grid grid-cols-6 gap-1">
         {quickLinks.map(({ label, icon: Icon, to, accent }) => (
-          <Link key={label} to={to} className="flex flex-col items-center gap-1 text-foreground">
+          <Link
+            key={label}
+            to={to}
+            className="flex flex-col items-center gap-1 text-foreground rounded-lg py-1 hover:bg-secondary active:scale-95 transition"
+          >
             <div className={`w-10 h-10 rounded-full flex items-center justify-center ${accent ? "text-primary" : "text-foreground"}`}>
               <Icon className="w-6 h-6" />
             </div>
@@ -65,7 +69,7 @@ const Index = () => {
               key={c}
               to={`/league/${slugify(c)}`}
               onClick={() => setLeagueIdx(i)}
-              className={`shrink-0 px-3 py-2 rounded text-xs font-bold border-t-2 ${
+              className={`shrink-0 px-3 py-2 rounded text-xs font-bold border-t-2 transition-colors hover:bg-secondary hover:text-foreground ${
                 leagueIdx === i ? "border-primary bg-secondary text-foreground" : "border-transparent bg-secondary/50 text-muted-foreground"
               }`}
             >
