@@ -77,18 +77,22 @@ const Index = () => {
 
       {/* Tabs */}
       <section className="bg-card px-4 pt-4 pb-2 flex items-center gap-4 border-t border-border overflow-x-auto scrollbar-hide">
-        {tabs.map((t) => (
-          <button
-            key={t}
-            onClick={() => setTab(t)}
-            className={`pb-2 text-base font-bold whitespace-nowrap relative ${
-              tab === t ? "text-success" : "text-muted-foreground"
-            }`}
-          >
-            {t}
-            {t === "Featured" && <span className="ml-2 text-foreground">|</span>}
-          </button>
-        ))}
+        {tabs.map((t) => {
+          const active = tab === t.label;
+          return (
+            <Link
+              key={t.label}
+              to={t.to}
+              onClick={() => setTab(t.label)}
+              className={`pb-2 text-base font-bold whitespace-nowrap relative transition-colors hover:text-success ${
+                active ? "text-success" : "text-muted-foreground"
+              }`}
+            >
+              {t.label}
+              {active && <span className="absolute -bottom-px left-0 right-0 h-0.5 bg-success rounded-full" />}
+            </Link>
+          );
+        })}
       </section>
 
       {/* Match list */}
