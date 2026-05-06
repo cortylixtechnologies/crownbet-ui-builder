@@ -30,40 +30,31 @@ export const liveMatches: Match[] = [
 ];
 
 export const promoCards = [
-  { id: "p1", title: "Lucky Numbers", color: "from-purple-500 to-pink-500", emoji: "🎱" },
-  { id: "p2", title: "JACKPOT", color: "from-amber-500 to-red-600", emoji: "🏆" },
-  { id: "p3", title: "Champions League", color: "from-blue-700 to-indigo-900", emoji: "⚽" },
-  { id: "p4", title: "Crown Missions", color: "from-emerald-500 to-teal-700", emoji: "👑" },
-  { id: "p5", title: "Aviator", color: "from-rose-500 to-orange-500", emoji: "✈️" },
+  { id: "p1", title: "Lucky Numbers", color: "from-purple-500 to-pink-500", emoji: "🎱", to: "/games" },
+  { id: "p2", title: "JACKPOT", color: "from-amber-500 to-red-600", emoji: "🏆", to: "/jackpot" },
+  { id: "p3", title: "Champions League", color: "from-blue-700 to-indigo-900", emoji: "⚽", to: "/league/champions-league" },
+  { id: "p4", title: "Crown Missions", color: "from-emerald-500 to-teal-700", emoji: "👑", to: "/promotions" },
+  { id: "p5", title: "Aviator", color: "from-rose-500 to-orange-500", emoji: "✈️", to: "/games" },
 ];
 
-export const sportsList = [
-  { name: "Popular", count: 245 },
-  { name: "Football", count: 180 },
-  { name: "vFootball", count: 32 },
-  { name: "Basketball", count: 48 },
-  { name: "Tennis", count: 56 },
-  { name: "eFootball", count: 24 },
-  { name: "Table Tennis", count: 18 },
-  { name: "Ice Hockey", count: 22 },
-  { name: "Handball", count: 14 },
-  { name: "Volleyball", count: 12 },
-  { name: "Cricket", count: 9 },
+export type SportLeagues = { name: string; count: number; leagues: string[] };
+
+export const sportsCatalog: SportLeagues[] = [
+  { name: "Popular", count: 245, leagues: ["Today's Football", "Football In Next 3 Hours", "Champions League", "Europa League", "Conference League", "CONMEBOL LIB / SUD", "England Premier League", "Spain La Liga", "Italy Serie A", "Bundesliga", "France Ligue 1"] },
+  { name: "Football", count: 180, leagues: ["England Premier League", "Spain La Liga", "Italy Serie A", "Bundesliga", "France Ligue 1", "Eredivisie", "Primeira Liga", "MLS", "Saudi Pro League"] },
+  { name: "vFootball", count: 32, leagues: ["vPremier", "vLa Liga", "vBundesliga", "vSerie A"] },
+  { name: "Basketball", count: 48, leagues: ["NBA", "EuroLeague", "NCAA", "Spain ACB", "Italy LBA", "Germany BBL"] },
+  { name: "Tennis", count: 56, leagues: ["ATP", "WTA", "ATP Challenger", "ITF Men", "ITF Women", "Davis Cup"] },
+  { name: "eFootball", count: 24, leagues: ["eFootball Cup", "eChampions", "eWorld Cup"] },
+  { name: "Table Tennis", count: 18, leagues: ["TT Star League", "TT Cup", "Setka Cup"] },
+  { name: "Ice Hockey", count: 22, leagues: ["NHL", "KHL", "SHL", "Liiga"] },
+  { name: "Handball", count: 14, leagues: ["EHF Champions League", "Bundesliga Handball", "LIQUI MOLY"] },
+  { name: "Volleyball", count: 12, leagues: ["CEV Champions League", "Italy SuperLega", "PlusLiga"] },
+  { name: "Cricket", count: 9, leagues: ["IPL", "Big Bash", "T20 Blast", "ICC World Cup"] },
 ];
 
-export const popularLeagues = [
-  "Today's Football",
-  "Football In Next 3 Hours",
-  "Champions League",
-  "Europa League",
-  "Conference League",
-  "CONMEBOL LIB / SUD",
-  "England Premier League",
-  "Spain La Liga",
-  "Italy Serie A",
-  "Bundesliga",
-  "France Ligue 1",
-];
+export const sportsList = sportsCatalog.map(({ name, count }) => ({ name, count }));
+export const popularLeagues = sportsCatalog[0].leagues;
 
 export const games = {
   Popular: [
@@ -112,3 +103,5 @@ export const recommendedCodes = [
     ],
   },
 ];
+
+export const slugify = (s: string) => s.toLowerCase().replace(/[^\w]+/g, "-").replace(/^-|-$/g, "");
