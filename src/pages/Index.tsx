@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Link } from "react-router-dom";
 import { AppLayout } from "@/components/layout/AppLayout";
 import { MatchCard } from "@/components/MatchCard";
-import { promoCards, featuredMatches, liveMatches } from "@/data/mockData";
+import { promoCards, featuredMatches, liveMatches, slugify } from "@/data/mockData";
 import { Globe, Tv, Share2, Plane, Trophy, MoreHorizontal } from "lucide-react";
 
 const quickLinks = [
@@ -27,13 +27,14 @@ const Index = () => {
       <section className="px-4 py-3 overflow-x-auto scrollbar-hide">
         <div className="flex gap-3">
           {promoCards.map((p) => (
-            <div
+            <Link
               key={p.id}
-              className={`relative shrink-0 w-32 h-24 rounded-xl bg-gradient-to-br ${p.color} shadow-card overflow-hidden flex items-end p-2`}
+              to={p.to}
+              className={`relative shrink-0 w-32 h-24 rounded-xl bg-gradient-to-br ${p.color} shadow-card overflow-hidden flex items-end p-2 active:scale-95 transition`}
             >
               <div className="absolute top-1 right-2 text-3xl">{p.emoji}</div>
               <span className="text-white text-xs font-bold leading-tight drop-shadow">{p.title}</span>
-            </div>
+            </Link>
           ))}
         </div>
       </section>
@@ -54,15 +55,16 @@ const Index = () => {
       <section className="px-3 py-2 overflow-x-auto scrollbar-hide bg-card border-t border-border">
         <div className="flex gap-2">
           {leagueChips.map((c, i) => (
-            <button
+            <Link
               key={c}
+              to={`/league/${slugify(c)}`}
               onClick={() => setLeagueIdx(i)}
               className={`shrink-0 px-3 py-2 rounded text-xs font-bold border-t-2 ${
                 leagueIdx === i ? "border-primary bg-secondary text-foreground" : "border-transparent bg-secondary/50 text-muted-foreground"
               }`}
             >
               {c.toUpperCase()}
-            </button>
+            </Link>
           ))}
         </div>
       </section>
@@ -86,15 +88,16 @@ const Index = () => {
       {/* Match list */}
       <section className="px-3 py-3 space-y-3">
         <div className="flex gap-2 overflow-x-auto scrollbar-hide">
-          {["UEFA Champions League", "Europa", "Conference", "Libertadores"].map((l, i) => (
-            <button
+          {["UEFA Champions League", "Europa League", "Conference League", "CONMEBOL LIB / SUD"].map((l, i) => (
+            <Link
               key={l}
+              to={`/league/${slugify(l)}`}
               className={`shrink-0 px-3 py-2 rounded-full text-xs font-bold border ${
                 i === 0 ? "border-foreground bg-card text-foreground" : "border-border bg-card text-muted-foreground"
               }`}
             >
               {l}
-            </button>
+            </Link>
           ))}
         </div>
 
