@@ -119,22 +119,28 @@ const Index = () => {
       {/* Live strip */}
       <section className="bg-surface-dark text-surface-dark-foreground mt-2 pt-4 pb-6">
         <div className="px-4 flex items-center gap-3 overflow-x-auto scrollbar-hide">
-          <span className="text-xl font-bold">Live</span>
+          <Link to="/live" className="text-xl font-bold hover:text-success transition-colors">Live</Link>
           <span className="text-white/40">|</span>
           {["Football", "vFootball", "Basketball", "Tennis", "eFootball"].map((s, i) => (
-            <button
+            <Link
               key={s}
-              className={`text-base font-bold whitespace-nowrap ${i === 0 ? "text-success" : "text-white/80"}`}
+              to={s === "vFootball" ? "/virtuals" : "/live"}
+              className={`text-base font-bold whitespace-nowrap transition-colors hover:text-success ${
+                i === 0 ? "text-success" : "text-white/80"
+              }`}
             >
               {s}
-            </button>
+            </Link>
           ))}
         </div>
         <div className="px-4 mt-3 flex items-center gap-4 overflow-x-auto scrollbar-hide border-b border-white/10 pb-2">
           {["1X2", "Over/Under", "DC", "1st Half O/U"].map((m, i) => (
             <button
               key={m}
-              className={`text-sm font-bold whitespace-nowrap pb-2 ${i === 0 ? "text-success border-b-2 border-success" : "text-white/70"}`}
+              type="button"
+              className={`text-sm font-bold whitespace-nowrap pb-2 transition-colors hover:text-success ${
+                i === 0 ? "text-success border-b-2 border-success" : "text-white/70"
+              }`}
             >
               {m}
             </button>
@@ -142,7 +148,11 @@ const Index = () => {
         </div>
         <div className="px-3 mt-3 space-y-2">
           {liveMatches.map((m) => (
-            <div key={m.id} className="bg-surface-dark-muted rounded-lg overflow-hidden">
+            <Link
+              key={m.id}
+              to="/live"
+              className="block bg-surface-dark-muted rounded-lg overflow-hidden hover:bg-white/10 active:scale-[0.99] transition"
+            >
               <div className="flex items-center justify-between px-3 py-2 text-xs">
                 <div className="flex items-center gap-2 min-w-0">
                   {m.hot && <span className="bg-primary text-primary-foreground px-1.5 py-0.5 rounded text-[10px] font-bold">HOT 🔥</span>}
@@ -162,12 +172,12 @@ const Index = () => {
               </div>
               <div className="grid grid-cols-3 gap-1 p-1">
                 {[m.odds.home, m.odds.draw, m.odds.away].map((o, i) => (
-                  <div key={i} className="bg-white/5 text-success text-center py-2 rounded font-bold text-sm">
+                  <div key={i} className="bg-white/5 text-success text-center py-2 rounded font-bold text-sm hover:bg-white/15 transition-colors">
                     {o.toFixed(2)}
                   </div>
                 ))}
               </div>
-            </div>
+            </Link>
           ))}
         </div>
       </section>
