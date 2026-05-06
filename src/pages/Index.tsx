@@ -36,7 +36,7 @@ const Index = () => {
             <Link
               key={p.id}
               to={p.to}
-              className={`relative shrink-0 w-32 h-24 rounded-xl bg-gradient-to-br ${p.color} shadow-card overflow-hidden flex items-end p-2 active:scale-95 transition`}
+              className={`relative shrink-0 w-32 h-24 rounded-xl bg-gradient-to-br ${p.color} shadow-card overflow-hidden flex items-end p-2 hover:shadow-elevated hover:-translate-y-0.5 active:scale-95 transition`}
             >
               <div className="absolute top-1 right-2 text-3xl">{p.emoji}</div>
               <span className="text-white text-xs font-bold leading-tight drop-shadow">{p.title}</span>
