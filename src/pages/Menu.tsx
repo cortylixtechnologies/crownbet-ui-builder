@@ -36,7 +36,7 @@ const Menu = () => {
             <Link
               key={label}
               to={to}
-              className="flex flex-col items-center gap-1 text-primary-foreground active:scale-95 transition"
+              className="flex flex-col items-center gap-1 text-primary-foreground rounded-lg py-2 hover:bg-white/10 active:scale-95 transition"
             >
               <Icon className="w-6 h-6" />
               <span className="text-[10px] font-bold text-center leading-tight">{label}</span>
