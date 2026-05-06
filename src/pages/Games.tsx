@@ -46,7 +46,7 @@ const Games = () => {
                 <button
                   key={g.id}
                   onClick={() => toast.info(`Launching ${g.title}…`)}
-                  className={`aspect-square rounded-xl bg-gradient-to-br ${g.color} shadow-card relative overflow-hidden flex flex-col items-center justify-center p-2 active:scale-95 transition`}
+                  className={`aspect-square rounded-xl bg-gradient-to-br ${g.color} shadow-card relative overflow-hidden flex flex-col items-center justify-center p-2 hover:shadow-elevated hover:-translate-y-0.5 active:scale-95 transition`}
                 >
                   <div className="text-4xl drop-shadow">{g.emoji}</div>
                   <div className="mt-1 text-white font-extrabold text-xs text-center drop-shadow leading-tight">
