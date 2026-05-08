@@ -1,16 +1,48 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { AppLayout } from "@/components/layout/AppLayout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useBetslip } from "@/context/BetslipContext";
+import { useAuth } from "@/context/AuthContext";
 import { Trash2, X } from "lucide-react";
 import { toast } from "sonner";
 import { Link } from "react-router-dom";
+import { supabase } from "@/integrations/supabase/client";
 
 const Betslip = () => {
   const { selections, removeSelection, clear, totalOdds } = useBetslip();
-  const [stake, setStake] = useState(1000);
+  const { session, profile, refreshProfile } = useAuth();
+  const navigate = useNavigate();
+  const [stake, setStake] = useState(100);
+  const [placing, setPlacing] = useState(false);
   const potential = stake * totalOdds;
+
+  const placeBet = async () => {
+    if (!session) {
+      toast.info("Log in to place a bet");
+      navigate("/login", { state: { from: "/betslip" } });
+      return;
+    }
+    if (selections.length === 0) return;
+    setPlacing(true);
+    const { data, error } = await supabase.rpc("place_bet", {
+      _stake: stake,
+      _selections: selections.map((s) => ({
+        match_id: s.matchId,
+        match_label: s.match,
+        market: s.market,
+        pick: s.pick,
+        odd: s.odd,
+      })),
+    });
+    setPlacing(false);
+    if (error) return toast.error(error.message);
+    toast.success(`Bet placed! ID: ${String(data).slice(0, 8)}`);
+    clear();
+    await refreshProfile();
+    navigate("/open-bets");
+  };
 
   return (
     <AppLayout>
@@ -22,6 +54,13 @@ const Betslip = () => {
           </button>
         )}
       </div>
+
+      {profile && (
+        <div className="bg-secondary px-4 py-2 text-xs text-muted-foreground flex justify-between">
+          <span>Balance</span>
+          <span className="font-bold text-foreground">TZS {Number(profile.balance).toLocaleString()}</span>
+        </div>
+      )}
 
       {selections.length === 0 ? (
         <div className="px-6 py-16 text-center">
@@ -56,12 +95,9 @@ const Betslip = () => {
             </div>
             <div className="flex items-center gap-2">
               <span className="text-sm font-medium">Stake (TZS)</span>
-              <Input
-                type="number"
-                value={stake}
+              <Input type="number" value={stake}
                 onChange={(e) => setStake(Math.max(0, Number(e.target.value)))}
-                className="flex-1 h-10"
-              />
+                className="flex-1 h-10" />
             </div>
             <div className="flex justify-between border-t border-border pt-3">
               <span className="font-bold text-foreground">Potential win</span>
@@ -69,11 +105,9 @@ const Betslip = () => {
                 TZS {potential.toLocaleString(undefined, { maximumFractionDigits: 2 })}
               </span>
             </div>
-            <Button
-              onClick={() => toast.info("Log in to place a bet (UI demo).")}
-              className="w-full bg-gradient-primary text-primary-foreground font-bold h-12 text-base"
-            >
-              Place Bet
+            <Button onClick={placeBet} disabled={placing}
+              className="w-full bg-gradient-primary text-primary-foreground font-bold h-12 text-base">
+              {placing ? "Placing…" : session ? "Place Bet" : "Log in to place bet"}
             </Button>
           </div>
         </>

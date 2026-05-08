@@ -12,7 +12,7 @@ import {
   Gamepad2,
   ExternalLink,
 } from "lucide-react";
-import { useAdmin } from "@/context/AdminContext";
+import { useAuth } from "@/context/AuthContext";
 
 const items = [
   { to: "/admin", label: "Dashboard", icon: LayoutDashboard, end: true },
@@ -25,8 +25,9 @@ const items = [
 ];
 
 export const AdminLayout = ({ children }: { children?: ReactNode }) => {
-  const { isAdmin, logout } = useAdmin();
+  const { isAdmin, signOut, loading } = useAuth();
   const navigate = useNavigate();
+  if (loading) return null;
   if (!isAdmin) return <Navigate to="/admin/login" replace />;
 
   return (
@@ -63,8 +64,8 @@ export const AdminLayout = ({ children }: { children?: ReactNode }) => {
             <ExternalLink className="w-4 h-4" /> View Site
           </NavLink>
           <button
-            onClick={() => {
-              logout();
+            onClick={async () => {
+              await signOut();
               navigate("/admin/login");
             }}
             className="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-white/80 hover:bg-white/10"

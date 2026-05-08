@@ -1,26 +1,50 @@
 import { useState } from "react";
-import { Navigate, useNavigate } from "react-router-dom";
+import { Link, Navigate, useNavigate } from "react-router-dom";
 import { Crown, Lock, Mail } from "lucide-react";
-import { useAdmin } from "@/context/AdminContext";
+import { useAuth } from "@/context/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
+import { supabase } from "@/integrations/supabase/client";
 
 const AdminLogin = () => {
-  const { isAdmin, login } = useAdmin();
+  const { isAdmin, signIn, user, loading } = useAuth();
   const navigate = useNavigate();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [submitting, setSubmitting] = useState(false);
 
-  if (isAdmin) return <Navigate to="/admin" replace />;
+  if (!loading && isAdmin) return <Navigate to="/admin" replace />;
 
-  const submit = (e: React.FormEvent) => {
+  const submit = async (e: React.FormEvent) => {
     e.preventDefault();
-    const r = login(email, password);
-    if (r.ok) {
-      toast.success("Welcome back, Admin");
-      navigate("/admin");
-    } else toast.error(r.error || "Login failed");
+    setSubmitting(true);
+    const r = await signIn(email, password);
+    if (r.error) {
+      toast.error(r.error);
+      setSubmitting(false);
+      return;
+    }
+    // verify admin role right away
+    const { data: { user: u } } = await supabase.auth.getUser();
+    if (!u) {
+      toast.error("Login failed");
+      setSubmitting(false);
+      return;
+    }
+    const { data: roles } = await supabase
+      .from("user_roles")
+      .select("role")
+      .eq("user_id", u.id);
+    const ok = roles?.some((r: any) => r.role === "admin");
+    if (!ok) {
+      toast.error("This account is not an admin.");
+      await supabase.auth.signOut();
+      setSubmitting(false);
+      return;
+    }
+    toast.success("Welcome back, Admin");
+    navigate("/admin");
   };
 
   return (
@@ -63,11 +87,12 @@ const AdminLogin = () => {
             </div>
           </label>
         </div>
-        <Button type="submit" className="w-full bg-gold text-gold-foreground hover:bg-gold/90 font-bold">
-          Sign in to Admin
+        <Button type="submit" disabled={submitting} className="w-full bg-gold text-gold-foreground hover:bg-gold/90 font-bold">
+          {submitting ? "Signing in…" : "Sign in to Admin"}
         </Button>
         <p className="text-[11px] text-white/50 text-center">
-          Frontend-only demo. Backend coming soon.
+          Don't have an admin account yet?{" "}
+          <Link to="/register" className="underline">Register</Link> with the admin email and you'll be granted access automatically.
         </p>
       </form>
     </div>

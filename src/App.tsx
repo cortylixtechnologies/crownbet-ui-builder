@@ -4,7 +4,8 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { BetslipProvider } from "@/context/BetslipContext";
-import { AdminProvider } from "@/context/AdminContext";
+import { AuthProvider } from "@/context/AuthContext";
+import { ProtectedRoute } from "@/components/ProtectedRoute";
 import Index from "./pages/Index";
 import Menu from "./pages/Menu";
 import Games from "./pages/Games";
@@ -45,7 +46,7 @@ const App = () => (
     <TooltipProvider>
       <Toaster />
       <Sonner />
-      <AdminProvider>
+      <AuthProvider>
         <BetslipProvider>
           <BrowserRouter>
             <Routes>
@@ -57,20 +58,22 @@ const App = () => (
               <Route path="/games/dice" element={<Dice />} />
               <Route path="/games/mines" element={<Mines />} />
               <Route path="/games/wheel" element={<Wheel />} />
-              <Route path="/open-bets" element={<OpenBets />} />
-              <Route path="/me" element={<Me />} />
-              <Route path="/login" element={<Login />} />
-              <Route path="/register" element={<Register />} />
               <Route path="/search" element={<Search />} />
               <Route path="/live" element={<Live />} />
               <Route path="/load-code" element={<LoadCode />} />
-              <Route path="/betslip" element={<Betslip />} />
               <Route path="/league/:slug" element={<League />} />
               <Route path="/jackpot" element={<Jackpot />} />
               <Route path="/virtuals" element={<Virtuals />} />
               <Route path="/livescore" element={<Livescore />} />
               <Route path="/results" element={<Results />} />
               <Route path="/promotions" element={<Promotions />} />
+              <Route path="/login" element={<Login />} />
+              <Route path="/register" element={<Register />} />
+
+              {/* Auth-protected pages */}
+              <Route path="/betslip" element={<ProtectedRoute><Betslip /></ProtectedRoute>} />
+              <Route path="/open-bets" element={<ProtectedRoute><OpenBets /></ProtectedRoute>} />
+              <Route path="/me" element={<Me />} />
 
               {/* Admin */}
               <Route path="/admin/login" element={<AdminLogin />} />
@@ -88,7 +91,7 @@ const App = () => (
             </Routes>
           </BrowserRouter>
         </BetslipProvider>
-      </AdminProvider>
+      </AuthProvider>
     </TooltipProvider>
   </QueryClientProvider>
 );
