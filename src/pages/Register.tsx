@@ -5,36 +5,51 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
+import { useAuth } from "@/context/AuthContext";
 
 const Register = () => {
   const navigate = useNavigate();
-  const submit = (e: React.FormEvent) => {
+  const { signUp } = useAuth();
+  const [v, setV] = useState({ email: "", password: "", displayName: "" });
+  const [busy, setBusy] = useState(false);
+
+  const submit = async (e: React.FormEvent) => {
     e.preventDefault();
-    toast.info("This is a UI demo — registration is not connected.");
-    setTimeout(() => navigate("/"), 800);
+    if (v.password.length < 8) return toast.error("Password must be at least 8 characters");
+    setBusy(true);
+    const r = await signUp(v.email, v.password, v.displayName || undefined);
+    setBusy(false);
+    if (r.error) return toast.error(r.error);
+    toast.success("Account created — check your email to confirm, then log in.");
+    navigate("/login");
   };
-  const [v, setV] = useState({ phone: "", password: "", promo: "" });
+
   return (
     <AppLayout>
       <div className="px-6 py-8 max-w-md mx-auto">
         <h1 className="text-2xl font-extrabold text-foreground">Join CrownBet</h1>
-        <p className="text-muted-foreground text-sm mt-1">Get a welcome bonus on your first deposit</p>
+        <p className="text-muted-foreground text-sm mt-1">Get 1,000 demo credits when you sign up</p>
 
         <form onSubmit={submit} className="mt-6 space-y-4">
           <div>
-            <Label>Mobile Number</Label>
-            <Input value={v.phone} onChange={(e) => setV({ ...v, phone: e.target.value })} placeholder="0712 345 678" className="mt-1" />
+            <Label>Display name</Label>
+            <Input value={v.displayName} onChange={(e) => setV({ ...v, displayName: e.target.value })}
+              placeholder="Your name" className="mt-1" />
+          </div>
+          <div>
+            <Label>Email</Label>
+            <Input type="email" autoComplete="email" value={v.email}
+              onChange={(e) => setV({ ...v, email: e.target.value })}
+              placeholder="you@example.com" className="mt-1" required />
           </div>
           <div>
             <Label>Password</Label>
-            <Input type="password" value={v.password} onChange={(e) => setV({ ...v, password: e.target.value })} placeholder="At least 8 characters" className="mt-1" />
+            <Input type="password" autoComplete="new-password" value={v.password}
+              onChange={(e) => setV({ ...v, password: e.target.value })}
+              placeholder="At least 8 characters" className="mt-1" required />
           </div>
-          <div>
-            <Label>Promo code (optional)</Label>
-            <Input value={v.promo} onChange={(e) => setV({ ...v, promo: e.target.value })} placeholder="CROWN100" className="mt-1" />
-          </div>
-          <Button type="submit" className="w-full bg-gradient-primary text-primary-foreground font-bold h-11">
-            Create account
+          <Button type="submit" disabled={busy} className="w-full bg-gradient-primary text-primary-foreground font-bold h-11">
+            {busy ? "Creating…" : "Create account"}
           </Button>
         </form>
 

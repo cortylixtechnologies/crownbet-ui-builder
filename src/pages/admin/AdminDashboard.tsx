@@ -1,7 +1,8 @@
-import { useAdmin } from "@/context/AdminContext";
+import { useEffect, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { CalendarRange, Radio, Users, Megaphone, TrendingUp, DollarSign } from "lucide-react";
 import { Link } from "react-router-dom";
+import { supabase } from "@/integrations/supabase/client";
 
 const Stat = ({ label, value, icon: Icon, accent }: any) => (
   <Card>
@@ -18,10 +19,30 @@ const Stat = ({ label, value, icon: Icon, accent }: any) => (
 );
 
 const AdminDashboard = () => {
-  const { store } = useAdmin();
-  const liveCount = store.matches.filter((m) => m.live).length;
-  const activeUsers = store.users.filter((u) => u.status === "active").length;
-  const totalBalance = store.users.reduce((a, u) => a + u.balance, 0);
+  const [stats, setStats] = useState({ matches: 0, live: 0, users: 0, promos: 0, balance: 0, bets: 0 });
+  const [liveMatches, setLiveMatches] = useState<any[]>([]);
+
+  useEffect(() => {
+    const load = async () => {
+      const [m, mLive, u, p, b] = await Promise.all([
+        supabase.from("matches").select("*", { count: "exact", head: true }),
+        supabase.from("matches").select("*").eq("live", true),
+        supabase.from("profiles").select("balance"),
+        supabase.from("promotions").select("*", { count: "exact", head: true }).eq("active", true),
+        supabase.from("bets").select("*", { count: "exact", head: true }).gte("placed_at", new Date(Date.now() - 86400000).toISOString()),
+      ]);
+      setStats({
+        matches: m.count ?? 0,
+        live: mLive.data?.length ?? 0,
+        users: u.data?.length ?? 0,
+        promos: p.count ?? 0,
+        balance: u.data?.reduce((a: number, x: any) => a + Number(x.balance), 0) ?? 0,
+        bets: b.count ?? 0,
+      });
+      setLiveMatches(mLive.data ?? []);
+    };
+    load();
+  }, []);
 
   return (
     <div className="space-y-6">
@@ -31,18 +52,16 @@ const AdminDashboard = () => {
       </div>
 
       <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-        <Stat label="Total Matches" value={store.matches.length} icon={CalendarRange} accent="bg-primary" />
-        <Stat label="Live Now" value={liveCount} icon={Radio} accent="bg-success" />
-        <Stat label="Active Users" value={activeUsers} icon={Users} accent="bg-accent" />
-        <Stat label="Promotions" value={store.promos.filter((p) => p.active).length} icon={Megaphone} accent="bg-gold text-gold-foreground" />
-        <Stat label="Total Balances" value={`$${totalBalance.toLocaleString()}`} icon={DollarSign} accent="bg-primary-dark" />
-        <Stat label="Bets (24h)" value={Math.floor(Math.random() * 200) + 50} icon={TrendingUp} accent="bg-surface-dark" />
+        <Stat label="Total Matches" value={stats.matches} icon={CalendarRange} accent="bg-primary" />
+        <Stat label="Live Now" value={stats.live} icon={Radio} accent="bg-success" />
+        <Stat label="Users" value={stats.users} icon={Users} accent="bg-accent" />
+        <Stat label="Promotions" value={stats.promos} icon={Megaphone} accent="bg-gold text-gold-foreground" />
+        <Stat label="Total Balances" value={`$${stats.balance.toLocaleString()}`} icon={DollarSign} accent="bg-primary-dark" />
+        <Stat label="Bets (24h)" value={stats.bets} icon={TrendingUp} accent="bg-surface-dark" />
       </div>
 
       <Card>
-        <CardHeader>
-          <CardTitle>Quick Actions</CardTitle>
-        </CardHeader>
+        <CardHeader><CardTitle>Quick Actions</CardTitle></CardHeader>
         <CardContent className="grid grid-cols-2 md:grid-cols-4 gap-3">
           {[
             { to: "/admin/matches", label: "Add Match" },
@@ -62,11 +81,9 @@ const AdminDashboard = () => {
       </Card>
 
       <Card>
-        <CardHeader>
-          <CardTitle>Recent Live Matches</CardTitle>
-        </CardHeader>
+        <CardHeader><CardTitle>Live Matches</CardTitle></CardHeader>
         <CardContent className="space-y-2">
-          {store.matches.filter((m) => m.live).slice(0, 5).map((m) => (
+          {liveMatches.slice(0, 5).map((m) => (
             <div key={m.id} className="flex items-center justify-between bg-secondary rounded-lg p-3 text-sm">
               <div>
                 <div className="font-bold">{m.home} vs {m.away}</div>
@@ -78,7 +95,7 @@ const AdminDashboard = () => {
               </div>
             </div>
           ))}
-          {liveCount === 0 && <p className="text-sm text-muted-foreground">No live matches right now.</p>}
+          {liveMatches.length === 0 && <p className="text-sm text-muted-foreground">No live matches right now.</p>}
         </CardContent>
       </Card>
     </div>
