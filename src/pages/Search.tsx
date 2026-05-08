@@ -1,20 +1,22 @@
 import { useState, useMemo } from "react";
 import { AppLayout } from "@/components/layout/AppLayout";
 import { Search as SearchIcon, X } from "lucide-react";
-import { featuredMatches, popularLeagues } from "@/data/mockData";
+import { popularLeagues } from "@/data/mockData";
+import { useMatches } from "@/hooks/useMatches";
 import { useNavigate } from "react-router-dom";
 
 const SearchPage = () => {
   const [q, setQ] = useState("");
   const navigate = useNavigate();
+  const { matches } = useMatches();
 
   const results = useMemo(() => {
     if (!q) return [];
     const t = q.toLowerCase();
-    return featuredMatches.filter(
+    return matches.filter(
       (m) => m.home.toLowerCase().includes(t) || m.away.toLowerCase().includes(t) || m.league.toLowerCase().includes(t)
     );
-  }, [q]);
+  }, [q, matches]);
 
   return (
     <AppLayout headerVariant="search">
@@ -43,11 +45,8 @@ const SearchPage = () => {
             <h2 className="text-sm font-bold text-muted-foreground mb-3">POPULAR LEAGUES</h2>
             <div className="flex flex-wrap gap-2">
               {popularLeagues.map((l) => (
-                <button
-                  key={l}
-                  onClick={() => setQ(l.split(" ")[0])}
-                  className="px-3 py-2 bg-card rounded-full text-sm border border-border"
-                >
+                <button key={l} onClick={() => setQ(l.split(" ")[0])}
+                  className="px-3 py-2 bg-card rounded-full text-sm border border-border">
                   {l}
                 </button>
               ))}
