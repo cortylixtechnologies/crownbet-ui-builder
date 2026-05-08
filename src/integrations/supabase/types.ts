@@ -14,16 +14,313 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      bet_selections: {
+        Row: {
+          bet_id: string
+          id: string
+          market: string
+          match_id: string | null
+          match_label: string
+          odd: number
+          pick: string
+        }
+        Insert: {
+          bet_id: string
+          id?: string
+          market: string
+          match_id?: string | null
+          match_label: string
+          odd: number
+          pick: string
+        }
+        Update: {
+          bet_id?: string
+          id?: string
+          market?: string
+          match_id?: string | null
+          match_label?: string
+          odd?: number
+          pick?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "bet_selections_bet_id_fkey"
+            columns: ["bet_id"]
+            isOneToOne: false
+            referencedRelation: "bets"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "bet_selections_match_id_fkey"
+            columns: ["match_id"]
+            isOneToOne: false
+            referencedRelation: "matches"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      bets: {
+        Row: {
+          id: string
+          placed_at: string
+          potential_win: number
+          settled_at: string | null
+          stake: number
+          status: string
+          total_odds: number
+          user_id: string
+        }
+        Insert: {
+          id?: string
+          placed_at?: string
+          potential_win: number
+          settled_at?: string | null
+          stake: number
+          status?: string
+          total_odds: number
+          user_id: string
+        }
+        Update: {
+          id?: string
+          placed_at?: string
+          potential_win?: number
+          settled_at?: string | null
+          stake?: number
+          status?: string
+          total_odds?: number
+          user_id?: string
+        }
+        Relationships: []
+      }
+      games: {
+        Row: {
+          active: boolean
+          category: string
+          color: string
+          emoji: string
+          id: string
+          slug: string
+          sort_order: number
+          title: string
+        }
+        Insert: {
+          active?: boolean
+          category: string
+          color: string
+          emoji: string
+          id?: string
+          slug: string
+          sort_order?: number
+          title: string
+        }
+        Update: {
+          active?: boolean
+          category?: string
+          color?: string
+          emoji?: string
+          id?: string
+          slug?: string
+          sort_order?: number
+          title?: string
+        }
+        Relationships: []
+      }
+      matches: {
+        Row: {
+          away: string
+          created_at: string
+          home: string
+          hot: boolean
+          id: string
+          league: string
+          league_icon: string | null
+          live: boolean
+          match_date: string
+          match_time: string
+          minute: string | null
+          odds_away: number
+          odds_draw: number
+          odds_home: number
+          score: string | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          away: string
+          created_at?: string
+          home: string
+          hot?: boolean
+          id?: string
+          league: string
+          league_icon?: string | null
+          live?: boolean
+          match_date: string
+          match_time: string
+          minute?: string | null
+          odds_away: number
+          odds_draw: number
+          odds_home: number
+          score?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          away?: string
+          created_at?: string
+          home?: string
+          hot?: boolean
+          id?: string
+          league?: string
+          league_icon?: string | null
+          live?: boolean
+          match_date?: string
+          match_time?: string
+          minute?: string | null
+          odds_away?: number
+          odds_draw?: number
+          odds_home?: number
+          score?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      profiles: {
+        Row: {
+          balance: number
+          created_at: string
+          display_name: string | null
+          email: string | null
+          id: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          balance?: number
+          created_at?: string
+          display_name?: string | null
+          email?: string | null
+          id: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          balance?: number
+          created_at?: string
+          display_name?: string | null
+          email?: string | null
+          id?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      promotions: {
+        Row: {
+          active: boolean
+          color: string
+          created_at: string
+          emoji: string
+          id: string
+          sort_order: number
+          title: string
+          to_url: string
+        }
+        Insert: {
+          active?: boolean
+          color: string
+          created_at?: string
+          emoji: string
+          id?: string
+          sort_order?: number
+          title: string
+          to_url: string
+        }
+        Update: {
+          active?: boolean
+          color?: string
+          created_at?: string
+          emoji?: string
+          id?: string
+          sort_order?: number
+          title?: string
+          to_url?: string
+        }
+        Relationships: []
+      }
+      site_settings: {
+        Row: {
+          accepting_bets: boolean
+          id: number
+          maintenance: boolean
+          max_stake: number
+          min_stake: number
+          site_name: string
+          updated_at: string
+          welcome_bonus_pct: number
+        }
+        Insert: {
+          accepting_bets?: boolean
+          id?: number
+          maintenance?: boolean
+          max_stake?: number
+          min_stake?: number
+          site_name?: string
+          updated_at?: string
+          welcome_bonus_pct?: number
+        }
+        Update: {
+          accepting_bets?: boolean
+          id?: number
+          maintenance?: boolean
+          max_stake?: number
+          min_stake?: number
+          site_name?: string
+          updated_at?: string
+          welcome_bonus_pct?: number
+        }
+        Relationships: []
+      }
+      user_roles: {
+        Row: {
+          created_at: string
+          id: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      has_role: {
+        Args: {
+          _role: Database["public"]["Enums"]["app_role"]
+          _user_id: string
+        }
+        Returns: boolean
+      }
+      place_bet: {
+        Args: { _selections: Json; _stake: number }
+        Returns: string
+      }
     }
     Enums: {
-      [_ in never]: never
+      app_role: "admin" | "user"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -150,6 +447,8 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      app_role: ["admin", "user"],
+    },
   },
 } as const
