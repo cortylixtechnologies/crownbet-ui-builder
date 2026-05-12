@@ -229,13 +229,13 @@ const Aviator = () => {
               <img
                 src={planeImg}
                 alt="Aviator plane"
-                className={`absolute w-28 h-auto pointer-events-none transition-transform duration-100 ${phase === "crashed" ? "opacity-30" : ""}`}
+                className={`absolute w-28 h-auto pointer-events-none ${phase === "crashed" ? "transition-all duration-700 ease-in opacity-0" : "transition-transform duration-100"}`}
                 style={{
                   left: 0,
                   bottom: 0,
                   transform: phase === "running"
                     ? `translate(${Math.min(multiplier * 40, 280)}px, ${-Math.min(multiplier * 32, 180)}px) rotate(-15deg)`
-                    : phase === "crashed" ? "translate(300px, -200px) rotate(35deg)" : "translate(-20px, -10px) rotate(-8deg)",
+                    : phase === "crashed" ? "translate(800px, -600px) rotate(45deg) scale(0.4)" : "translate(-20px, -10px) rotate(-8deg)",
                 }}
               />
               <div className="text-center z-10">
