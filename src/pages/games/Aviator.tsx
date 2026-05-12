@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Plane, Send, RotateCw } from "lucide-react";
 import { toast } from "sonner";
+import planeImg from "@/assets/aviator-plane.png";
 
 type Phase = "waiting" | "running" | "crashed";
 type LiveBet = { user: string; amount: number; cashedAt: number | null; win: number | null };
@@ -225,12 +226,16 @@ const Aviator = () => {
             <div className="relative h-72 rounded-2xl bg-gradient-to-br from-indigo-950 via-purple-950 to-rose-950 overflow-hidden flex items-center justify-center border border-white/10">
               {/* radial rays */}
               <div className="absolute inset-0 opacity-30 bg-[radial-gradient(circle_at_30%_70%,transparent_0%,#000_70%)]" />
-              <Plane
-                className={`absolute w-14 h-14 text-rose-500 transition-transform duration-100 ${phase === "crashed" ? "opacity-30" : ""}`}
+              <img
+                src={planeImg}
+                alt="Aviator plane"
+                className={`absolute w-28 h-auto pointer-events-none transition-transform duration-100 ${phase === "crashed" ? "opacity-30" : ""}`}
                 style={{
+                  left: 0,
+                  bottom: 0,
                   transform: phase === "running"
-                    ? `translate(${Math.min(multiplier * 35, 240)}px, ${-Math.min(multiplier * 28, 160)}px) rotate(-25deg)`
-                    : phase === "crashed" ? "translate(260px, -180px) rotate(40deg)" : "translate(-120px, 60px) rotate(-10deg)",
+                    ? `translate(${Math.min(multiplier * 40, 280)}px, ${-Math.min(multiplier * 32, 180)}px) rotate(-15deg)`
+                    : phase === "crashed" ? "translate(300px, -200px) rotate(35deg)" : "translate(-20px, -10px) rotate(-8deg)",
                 }}
               />
               <div className="text-center z-10">
