@@ -234,8 +234,8 @@ const Aviator = () => {
                   left: 0,
                   bottom: 0,
                   transform: phase === "running"
-                    ? `translate(${Math.min(multiplier * 40, 280)}px, ${-Math.min(multiplier * 32, 180)}px) rotate(-15deg)`
-                    : phase === "crashed" ? "translate(800px, -600px) rotate(45deg) scale(0.4)" : "translate(-20px, -10px) rotate(-8deg)",
+                    ? `translate(${Math.min(multiplier * 40, 280)}px, ${-Math.min(multiplier * 32, 180)}px)`
+                    : phase === "crashed" ? "translate(800px, -600px) scale(0.4)" : "translate(-20px, -10px)",
                 }}
               />
               <div className="text-center z-10">
