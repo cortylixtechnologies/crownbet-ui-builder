@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Plane, Send, RotateCw } from "lucide-react";
 import { toast } from "sonner";
+import planeImg from "@/assets/aviator-plane.png";
 
 type Phase = "waiting" | "running" | "crashed";
 type LiveBet = { user: string; amount: number; cashedAt: number | null; win: number | null };
