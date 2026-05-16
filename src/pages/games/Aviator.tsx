@@ -5,6 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Plane, Send, RotateCw } from "lucide-react";
 import { toast } from "sonner";
 import planeImg from "@/assets/aviator-plane.png";
+import { usePlayGame } from "@/hooks/usePlayGame";
 
 type Phase = "waiting" | "running" | "crashed";
 type LiveBet = { user: string; amount: number; cashedAt: number | null; win: number | null };
@@ -15,7 +16,7 @@ const COLORS = ["text-rose-400", "text-emerald-400", "text-sky-400", "text-amber
 const rand = <T,>(a: T[]) => a[Math.floor(Math.random() * a.length)];
 
 const Aviator = () => {
-  const [balance, setBalance] = useState(1000);
+  const { play, balance, signedIn } = usePlayGame();
   const [bet, setBet] = useState(30);
   const [phase, setPhase] = useState<Phase>("waiting");
   const [multiplier, setMultiplier] = useState(1);
@@ -48,26 +49,31 @@ const Aviator = () => {
     setLiveBets(arr);
   };
 
-  // Place bet (only during waiting phase)
-  const placeBet = () => {
+  // Place bet (only during waiting phase) — debits stake from DB balance
+  const placeBet = async () => {
+    if (!signedIn) return toast.error("Please sign in");
     if (phase !== "waiting") return toast.error("Wait for next round");
     if (bet <= 0 || bet > balance) return toast.error("Invalid bet");
-    setBalance((b) => b - bet);
+    const res = await play({ game: "aviator", stake: bet, payout: 0, multiplier: 0, meta: { phase: "bet" } });
+    if (!res.ok) return;
     setHasBet(true);
     setCashedAt(null);
     toast.success(`Bet placed: $${bet}`);
   };
 
-  const cancelBet = () => {
+  // Refund stake if cancelled during waiting
+  const cancelBet = async () => {
     if (phase !== "waiting" || !hasBet) return;
-    setBalance((b) => b + bet);
+    const res = await play({ game: "aviator", stake: 0, payout: bet, multiplier: 0, meta: { phase: "cancel" } });
+    if (!res.ok) return;
     setHasBet(false);
   };
 
-  const cashout = () => {
+  const cashout = async () => {
     if (phase !== "running" || !hasBet || cashedAt !== null) return;
     const win = +(bet * multiplier).toFixed(2);
-    setBalance((b) => b + win);
+    const res = await play({ game: "aviator", stake: 0, payout: win, multiplier, meta: { phase: "cashout" } });
+    if (!res.ok) return;
     setCashedAt(multiplier);
     toast.success(`Cashed out ${multiplier.toFixed(2)}x → +$${win}`);
   };
