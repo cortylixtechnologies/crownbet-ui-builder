@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Disc3 } from "lucide-react";
 import { toast } from "sonner";
+import { usePlayGame } from "@/hooks/usePlayGame";
 
 const segments = [
   { mult: 0, color: "#1f2937" },
@@ -17,29 +18,28 @@ const segments = [
 ];
 
 const Wheel = () => {
-  const [balance, setBalance] = useState(1000);
+  const { play, balance, signedIn } = usePlayGame();
   const [bet, setBet] = useState(10);
   const [angle, setAngle] = useState(0);
   const [spinning, setSpinning] = useState(false);
 
   const spin = () => {
+    if (!signedIn) return toast.error("Please sign in");
     if (bet <= 0 || bet > balance) return toast.error("Invalid bet");
-    setBalance((b) => b - bet);
     setSpinning(true);
     const i = Math.floor(Math.random() * segments.length);
-    const segAngle = 360 / segments.length;
-    const finalAngle = 360 * 6 + (360 - i * segAngle - segAngle / 2);
+    const segAng = 360 / segments.length;
+    const finalAngle = 360 * 6 + (360 - i * segAng - segAng / 2);
     setAngle(finalAngle);
-    setTimeout(() => {
+    setTimeout(async () => {
       const seg = segments[i];
-      const win = +(bet * seg.mult).toFixed(2);
-      if (win > 0) {
-        setBalance((b) => b + win);
-        toast.success(`${seg.mult}x — won $${win}!`);
-      } else toast.error("No win this time");
+      const payout = +(bet * seg.mult).toFixed(2);
+      const res = await play({ game: "wheel", stake: bet, payout, multiplier: seg.mult, meta: { segment: i } });
       setSpinning(false);
-      // normalize
       setAngle(finalAngle % 360);
+      if (!res.ok) return;
+      if (payout > 0) toast.success(`${seg.mult}x — won $${payout}!`);
+      else toast.error("No win this time");
     }, 4200);
   };
 
@@ -60,19 +60,12 @@ const Wheel = () => {
             style={{
               transform: `rotate(${angle}deg)`,
               transition: spinning ? "transform 4s cubic-bezier(0.17, 0.67, 0.12, 0.99)" : "none",
-              background: `conic-gradient(${segments
-                .map((s, i) => `${s.color} ${i * segAngle}deg ${(i + 1) * segAngle}deg`)
-                .join(",")})`,
+              background: `conic-gradient(${segments.map((s, i) => `${s.color} ${i * segAngle}deg ${(i + 1) * segAngle}deg`).join(",")})`,
             }}
           >
             {segments.map((s, i) => (
-              <div
-                key={i}
-                className="absolute top-1/2 left-1/2 origin-left text-xs font-black text-white"
-                style={{
-                  transform: `rotate(${i * segAngle + segAngle / 2}deg) translateX(60px)`,
-                }}
-              >
+              <div key={i} className="absolute top-1/2 left-1/2 origin-left text-xs font-black text-white"
+                style={{ transform: `rotate(${i * segAngle + segAngle / 2}deg) translateX(60px)` }}>
                 {s.mult > 0 ? `${s.mult}x` : "—"}
               </div>
             ))}
