@@ -4,30 +4,30 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Coins } from "lucide-react";
 import { toast } from "sonner";
+import { usePlayGame } from "@/hooks/usePlayGame";
 
 const CoinFlip = () => {
-  const [balance, setBalance] = useState(1000);
+  const { play, balance, signedIn } = usePlayGame();
   const [bet, setBet] = useState(10);
   const [pick, setPick] = useState<"H" | "T">("H");
   const [result, setResult] = useState<"H" | "T" | null>(null);
   const [spinning, setSpinning] = useState(false);
 
-  const flip = () => {
+  const flip = async () => {
+    if (!signedIn) return toast.error("Please sign in");
     if (bet <= 0 || bet > balance) return toast.error("Invalid bet");
     setSpinning(true);
-    setBalance((b) => b - bet);
     setResult(null);
-    setTimeout(() => {
-      const r: "H" | "T" = Math.random() < 0.48 ? "H" : "T"; // small house edge
+    setTimeout(async () => {
+      const r: "H" | "T" = Math.random() < 0.48 ? "H" : "T";
       setResult(r);
       setSpinning(false);
-      if (r === pick) {
-        const win = bet * 2;
-        setBalance((b) => b + win);
-        toast.success(`You won $${win}!`);
-      } else {
-        toast.error("You lost");
-      }
+      const won = r === pick;
+      const payout = won ? bet * 2 : 0;
+      const res = await play({ game: "coinflip", stake: bet, payout, multiplier: won ? 2 : 0, meta: { pick, result: r } });
+      if (!res.ok) return;
+      if (won) toast.success(`You won $${payout}!`);
+      else toast.error("You lost");
     }, 1200);
   };
 

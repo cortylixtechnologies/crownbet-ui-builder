@@ -92,6 +92,42 @@ export type Database = {
         }
         Relationships: []
       }
+      game_transactions: {
+        Row: {
+          created_at: string
+          game: string
+          id: string
+          meta: Json | null
+          multiplier: number | null
+          net: number
+          payout: number
+          stake: number
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          game: string
+          id?: string
+          meta?: Json | null
+          multiplier?: number | null
+          net?: number
+          payout?: number
+          stake?: number
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          game?: string
+          id?: string
+          meta?: Json | null
+          multiplier?: number | null
+          net?: number
+          payout?: number
+          stake?: number
+          user_id?: string
+        }
+        Relationships: []
+      }
       games: {
         Row: {
           active: boolean
@@ -317,6 +353,19 @@ export type Database = {
       place_bet: {
         Args: { _selections: Json; _stake: number }
         Returns: string
+      }
+      play_game: {
+        Args: {
+          _game: string
+          _meta?: Json
+          _multiplier?: number
+          _payout: number
+          _stake: number
+        }
+        Returns: {
+          new_balance: number
+          tx_id: string
+        }[]
       }
     }
     Enums: {
