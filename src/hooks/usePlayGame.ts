@@ -13,8 +13,8 @@ export const usePlayGame = () => {
   const balance = Number(profile?.balance ?? 0);
 
   const handle = useCallback(
-    async <T,>(p: Promise<{ data: any; error: any }>): Promise<T | null> => {
-      const { data, error } = await p;
+    async <T,>(builder: any): Promise<T | null> => {
+      const { data, error } = await builder;
       if (error) {
         toast.error(error.message);
         return null;
