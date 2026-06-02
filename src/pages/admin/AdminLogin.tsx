@@ -91,8 +91,7 @@ const AdminLogin = () => {
           {submitting ? "Signing in…" : "Sign in to Admin"}
         </Button>
         <p className="text-[11px] text-white/50 text-center">
-          Don't have an admin account yet?{" "}
-          <Link to="/register" className="underline">Register</Link> with the admin email and you'll be granted access automatically.
+          Admin access is granted by an existing administrator.
         </p>
       </form>
     </div>

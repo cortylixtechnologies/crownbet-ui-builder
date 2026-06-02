@@ -16,7 +16,7 @@ const COLORS = ["text-rose-400", "text-emerald-400", "text-sky-400", "text-amber
 const rand = <T,>(a: T[]) => a[Math.floor(Math.random() * a.length)];
 
 const Aviator = () => {
-  const { play, balance, signedIn } = usePlayGame();
+  const { aviatorStart, aviatorCashout, aviatorResolveCrashed, balance, signedIn } = usePlayGame();
   const [bet, setBet] = useState(30);
   const [phase, setPhase] = useState<Phase>("waiting");
   const [multiplier, setMultiplier] = useState(1);
@@ -24,6 +24,7 @@ const Aviator = () => {
   const [history, setHistory] = useState<number[]>([1.32, 2.45, 1.08, 5.67, 1.91, 3.21, 1.14, 1.41, 2.82]);
   const [hasBet, setHasBet] = useState(false);
   const [cashedAt, setCashedAt] = useState<number | null>(null);
+  const [roundId, setRoundId] = useState<string | null>(null);
   const [liveBets, setLiveBets] = useState<LiveBet[]>([]);
   const [tab, setTab] = useState<"all" | "previous" | "top">("all");
   const [chat, setChat] = useState<ChatMsg[]>([
@@ -31,13 +32,15 @@ const Aviator = () => {
     { id: 2, user: "m***z", text: "cashed 5x 🔥", color: "text-amber-400" },
   ]);
   const [chatInput, setChatInput] = useState("");
-  const crashRef = useRef(0);
+  // Visual-only crash point. Server still owns the authoritative one.
+  const visualCrashRef = useRef(0);
   const rafRef = useRef<number>();
   const startRef = useRef(0);
-  const phaseRef = useRef<Phase>("waiting");
-  phaseRef.current = phase;
+  const roundIdRef = useRef<string | null>(null);
+  roundIdRef.current = roundId;
+  const cashedRef = useRef<number | null>(null);
+  cashedRef.current = cashedAt;
 
-  // Generate fake live bets at start of each round
   const seedLiveBets = () => {
     const n = 80 + Math.floor(Math.random() * 200);
     const arr: LiveBet[] = Array.from({ length: n }, () => ({
@@ -49,36 +52,32 @@ const Aviator = () => {
     setLiveBets(arr);
   };
 
-  // Place bet (only during waiting phase) — debits stake from DB balance
   const placeBet = async () => {
     if (!signedIn) return toast.error("Please sign in");
     if (phase !== "waiting") return toast.error("Wait for next round");
     if (bet <= 0 || bet > balance) return toast.error("Invalid bet");
-    const res = await play({ game: "aviator", stake: bet, payout: 0, multiplier: 0, meta: { phase: "bet" } });
-    if (!res.ok) return;
+    const res = await aviatorStart(bet);
+    if (!res) return;
+    setRoundId(res.round_id);
     setHasBet(true);
     setCashedAt(null);
     toast.success(`Bet placed: $${bet}`);
   };
 
-  // Refund stake if cancelled during waiting
-  const cancelBet = async () => {
-    if (phase !== "waiting" || !hasBet) return;
-    const res = await play({ game: "aviator", stake: 0, payout: bet, multiplier: 0, meta: { phase: "cancel" } });
-    if (!res.ok) return;
-    setHasBet(false);
-  };
-
   const cashout = async () => {
-    if (phase !== "running" || !hasBet || cashedAt !== null) return;
-    const win = +(bet * multiplier).toFixed(2);
-    const res = await play({ game: "aviator", stake: 0, payout: win, multiplier, meta: { phase: "cashout" } });
-    if (!res.ok) return;
-    setCashedAt(multiplier);
-    toast.success(`Cashed out ${multiplier.toFixed(2)}x → +$${win}`);
+    if (phase !== "running" || !hasBet || cashedAt !== null || !roundId) return;
+    const res = await aviatorCashout(roundId, multiplier);
+    if (!res) return;
+    if (res.crashed) {
+      toast.error(`Crashed at ${res.crash_multiplier}x`);
+      setCashedAt(null);
+    } else {
+      setCashedAt(Number(res.multiplier));
+      toast.success(`Cashed out ${Number(res.multiplier).toFixed(2)}x → +$${res.payout}`);
+    }
   };
 
-  // Round loop
+  // Visual round loop. Server is source of truth for payouts.
   useEffect(() => {
     let timer: ReturnType<typeof setTimeout>;
 
@@ -101,28 +100,32 @@ const Aviator = () => {
 
     const startRunning = () => {
       const r = Math.random();
-      crashRef.current = Math.max(1.01, +(1 / (1 - r * 0.97)).toFixed(2));
+      visualCrashRef.current = Math.max(1.01, +(1 / (1 - r * 0.97)).toFixed(2));
       startRef.current = performance.now();
       setPhase("running");
       const tick = (t: number) => {
         const elapsed = (t - startRef.current) / 1000;
         const m = +Math.exp(elapsed * 0.35).toFixed(2);
-        // simulate other players cashing out
         setLiveBets((prev) =>
           prev.map((b) => {
-            if (b.cashedAt === null && Math.random() < 0.008 && m < crashRef.current) {
+            if (b.cashedAt === null && Math.random() < 0.008 && m < visualCrashRef.current) {
               return { ...b, cashedAt: m, win: +(b.amount * m).toFixed(2) };
             }
             return b;
           })
         );
-        if (m >= crashRef.current) {
-          setMultiplier(crashRef.current);
-          setHistory((h) => [crashRef.current, ...h].slice(0, 12));
+        if (m >= visualCrashRef.current) {
+          setMultiplier(visualCrashRef.current);
+          setHistory((h) => [visualCrashRef.current, ...h].slice(0, 12));
           setPhase("crashed");
+          // If user had a bet and didn't cash out, finalize on server.
+          if (roundIdRef.current && cashedRef.current === null) {
+            aviatorResolveCrashed(roundIdRef.current);
+          }
           timer = setTimeout(() => {
             setHasBet(false);
             setCashedAt(null);
+            setRoundId(null);
             startWaiting();
           }, 2500);
           return;
@@ -142,14 +145,12 @@ const Aviator = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // Auto-loss when crashed without cashout
   useEffect(() => {
     if (phase === "crashed" && hasBet && cashedAt === null) {
-      toast.error(`Crashed at ${crashRef.current.toFixed(2)}x`);
+      toast.error(`Crashed at ${visualCrashRef.current.toFixed(2)}x`);
     }
   }, [phase, hasBet, cashedAt]);
 
-  // Random chat
   useEffect(() => {
     const i = setInterval(() => {
       const lines = ["nice 🔥", "cash early!", "next one big", "🚀🚀🚀", "ouch", "got 3x", "auto 1.5x", "lets gooo", "💰", "rip"];
@@ -164,9 +165,7 @@ const Aviator = () => {
     setChatInput("");
   };
 
-  const totalBet = liveBets.reduce((s, b) => s + b.amount, 0);
   const totalWin = liveBets.reduce((s, b) => s + (b.win ?? 0), 0);
-
   const visibleBets =
     tab === "previous" ? liveBets.filter((b) => b.cashedAt !== null) :
     tab === "top" ? [...liveBets].sort((a, b) => (b.win ?? 0) - (a.win ?? 0)).slice(0, 30) :
@@ -175,7 +174,6 @@ const Aviator = () => {
   return (
     <AppLayout>
       <div className="bg-surface-dark text-white min-h-[calc(100vh-120px)]">
-        {/* Top bar */}
         <div className="flex items-center justify-between px-4 py-2 border-b border-white/10">
           <div className="flex items-center gap-2 text-rose-500 font-extrabold italic text-xl">
             <Plane className="w-5 h-5" /> Aviator
@@ -183,7 +181,6 @@ const Aviator = () => {
           <div className="text-gold font-bold">${balance.toFixed(2)}</div>
         </div>
 
-        {/* History strip */}
         <div className="flex gap-2 overflow-x-auto px-3 py-2 border-b border-white/10 scrollbar-hide">
           {history.map((h, i) => (
             <span key={i} className={`px-2 py-0.5 rounded-full text-xs font-bold whitespace-nowrap ${h < 2 ? "text-sky-400" : h < 10 ? "text-fuchsia-400" : "text-rose-400"}`}>
@@ -193,7 +190,6 @@ const Aviator = () => {
         </div>
 
         <div className="grid lg:grid-cols-[280px_1fr_260px] gap-2 p-2">
-          {/* Live bets panel */}
           <div className="bg-surface-dark-muted rounded-xl border border-white/10 flex flex-col text-xs max-h-[420px] lg:max-h-[600px]">
             <div className="flex border-b border-white/10">
               {(["all", "previous", "top"] as const).map((t) => (
@@ -204,9 +200,7 @@ const Aviator = () => {
               ))}
             </div>
             <div className="px-3 py-2 border-b border-white/10 flex items-center justify-between">
-              <div>
-                <div className="font-bold">{liveBets.length} <span className="text-white/50 font-normal">Bets</span></div>
-              </div>
+              <div className="font-bold">{liveBets.length} <span className="text-white/50 font-normal">Bets</span></div>
               <div className="text-right">
                 <div className="text-gold font-bold">${totalWin.toFixed(2)}</div>
                 <div className="text-white/50 text-[10px]">Total win</div>
@@ -227,10 +221,8 @@ const Aviator = () => {
             </div>
           </div>
 
-          {/* Game canvas + bet panel */}
           <div className="space-y-2">
             <div className="relative h-72 rounded-2xl bg-gradient-to-br from-indigo-950 via-purple-950 to-rose-950 overflow-hidden flex items-center justify-center border border-white/10">
-              {/* radial rays */}
               <div className="absolute inset-0 opacity-30 bg-[radial-gradient(circle_at_30%_70%,transparent_0%,#000_70%)]" />
               <img
                 src={planeImg}
@@ -271,7 +263,6 @@ const Aviator = () => {
               </div>
             </div>
 
-            {/* Bet panel */}
             <div className="bg-surface-dark-muted rounded-xl p-3 border border-white/10 space-y-2">
               <div className="flex items-center gap-2">
                 <Button size="sm" variant="outline" onClick={() => setBet((b) => Math.max(1, b - 10))} className="border-white/20 text-white">−</Button>
@@ -293,8 +284,8 @@ const Aviator = () => {
                 </Button>
               )}
               {phase === "waiting" && hasBet && (
-                <Button onClick={cancelBet} className="w-full bg-rose-600 hover:bg-rose-700 h-14 text-lg font-extrabold">
-                  CANCEL (waiting {countdown}s)
+                <Button disabled className="w-full bg-white/10 h-14 text-base font-bold text-white/50">
+                  WAITING {countdown}s…
                 </Button>
               )}
               {phase === "running" && hasBet && cashedAt === null && (
@@ -320,7 +311,6 @@ const Aviator = () => {
             </div>
           </div>
 
-          {/* Chat */}
           <div className="bg-surface-dark-muted rounded-xl border border-white/10 flex flex-col max-h-[420px] lg:max-h-[600px]">
             <div className="px-3 py-2 border-b border-white/10 font-bold text-sm">💬 Chat</div>
             <div className="flex-1 overflow-y-auto px-3 py-2 space-y-1.5 text-xs scrollbar-hide">

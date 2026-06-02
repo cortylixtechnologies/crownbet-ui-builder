@@ -8,61 +8,47 @@ import { usePlayGame } from "@/hooks/usePlayGame";
 
 const SIZE = 25;
 
-const newBoard = (mines: number) => {
-  const idx = new Set<number>();
-  while (idx.size < mines) idx.add(Math.floor(Math.random() * SIZE));
-  return Array.from({ length: SIZE }, (_, i) => idx.has(i));
-};
-
 const Mines = () => {
-  const { play, balance, signedIn } = usePlayGame();
+  const { minesStart, minesPick, minesCashout, balance, signedIn } = usePlayGame();
   const [bet, setBet] = useState(10);
   const [stake, setStake] = useState(0);
   const [mineCount, setMineCount] = useState(3);
-  const [board, setBoard] = useState<boolean[]>([]);
-  const [revealed, setRevealed] = useState<Set<number>>(new Set());
+  const [revealed, setRevealed] = useState<Map<number, boolean>>(new Map()); // tile -> isMine
+  const [roundId, setRoundId] = useState<string | null>(null);
+  const [mult, setMult] = useState(1);
   const [active, setActive] = useState(false);
-  const [dead, setDead] = useState(false);
-
-  const safeRevealed = revealed.size;
-  let mult = 1;
-  for (let i = 0; i < safeRevealed; i++) {
-    mult *= (SIZE - i) / (SIZE - mineCount - i);
-  }
-  mult = +(mult * 0.97).toFixed(2);
+  const safeRevealed = Array.from(revealed.values()).filter((v) => !v).length;
 
   const start = async () => {
     if (!signedIn) return toast.error("Please sign in");
     if (bet <= 0 || bet > balance) return toast.error("Invalid bet");
-    // Debit stake immediately (payout=0). Win paid out on cashout.
-    const res = await play({ game: "mines", stake: bet, payout: 0, multiplier: 0, meta: { phase: "start", mines: mineCount } });
-    if (!res.ok) return;
+    const res = await minesStart(bet, mineCount);
+    if (!res) return;
     setStake(bet);
-    setBoard(newBoard(mineCount));
-    setRevealed(new Set());
+    setRoundId(res.round_id);
+    setRevealed(new Map());
+    setMult(1);
     setActive(true);
-    setDead(false);
   };
 
-  const click = (i: number) => {
-    if (!active || revealed.has(i)) return;
-    if (board[i]) {
-      setRevealed(new Set([...revealed, i]));
-      setDead(true);
+  const click = async (i: number) => {
+    if (!active || !roundId || revealed.has(i)) return;
+    const res = await minesPick(roundId, i);
+    if (!res) return;
+    setRevealed((prev) => new Map(prev).set(i, res.hit_mine));
+    if (res.hit_mine) {
       setActive(false);
       toast.error("Boom! Hit a mine");
-      return;
+    } else {
+      setMult(Number(res.multiplier));
     }
-    setRevealed(new Set([...revealed, i]));
   };
 
   const cashout = async () => {
-    if (!active || safeRevealed === 0) return;
-    const win = +(stake * mult).toFixed(2);
-    // Already debited at start. Now credit winnings with stake=0.
-    const res = await play({ game: "mines", stake: 0, payout: win, multiplier: mult, meta: { phase: "cashout", revealed: safeRevealed } });
-    if (!res.ok) return;
-    toast.success(`Cashed out $${win} (${mult}x)`);
+    if (!active || !roundId || safeRevealed === 0) return;
+    const res = await minesCashout(roundId);
+    if (!res) return;
+    toast.success(`Cashed out $${res.payout} (${res.multiplier}x)`);
     setActive(false);
   };
 
@@ -77,14 +63,13 @@ const Mines = () => {
         <div className="grid grid-cols-5 gap-2 max-w-sm mx-auto">
           {Array.from({ length: SIZE }).map((_, i) => {
             const isRev = revealed.has(i);
-            const isMine = board[i];
-            const showMine = (dead || !active) && isMine && board.length > 0;
+            const isMine = revealed.get(i);
             return (
               <button key={i} onClick={() => click(i)} disabled={!active}
                 className={`aspect-square rounded-lg flex items-center justify-center text-2xl font-bold transition ${
-                  isRev ? isMine ? "bg-primary" : "bg-success" : showMine ? "bg-primary/40" : "bg-white/10 hover:bg-white/20"
+                  isRev ? (isMine ? "bg-primary" : "bg-success") : "bg-white/10 hover:bg-white/20"
                 }`}>
-                {isRev || showMine ? (isMine ? <Bomb className="w-6 h-6" /> : <Gem className="w-6 h-6" />) : ""}
+                {isRev ? (isMine ? <Bomb className="w-6 h-6" /> : <Gem className="w-6 h-6" />) : ""}
               </button>
             );
           })}

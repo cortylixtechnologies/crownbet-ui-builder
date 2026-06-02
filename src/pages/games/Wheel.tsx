@@ -18,27 +18,25 @@ const segments = [
 ];
 
 const Wheel = () => {
-  const { play, balance, signedIn } = usePlayGame();
+  const { wheel, balance, signedIn } = usePlayGame();
   const [bet, setBet] = useState(10);
   const [angle, setAngle] = useState(0);
   const [spinning, setSpinning] = useState(false);
 
-  const spin = () => {
+  const spin = async () => {
     if (!signedIn) return toast.error("Please sign in");
     if (bet <= 0 || bet > balance) return toast.error("Invalid bet");
     setSpinning(true);
-    const i = Math.floor(Math.random() * segments.length);
+    const res = await wheel(bet);
+    if (!res) { setSpinning(false); return; }
+    const i = res.segment;
     const segAng = 360 / segments.length;
     const finalAngle = 360 * 6 + (360 - i * segAng - segAng / 2);
     setAngle(finalAngle);
-    setTimeout(async () => {
-      const seg = segments[i];
-      const payout = +(bet * seg.mult).toFixed(2);
-      const res = await play({ game: "wheel", stake: bet, payout, multiplier: seg.mult, meta: { segment: i } });
+    setTimeout(() => {
       setSpinning(false);
       setAngle(finalAngle % 360);
-      if (!res.ok) return;
-      if (payout > 0) toast.success(`${seg.mult}x — won $${payout}!`);
+      if (res.payout > 0) toast.success(`${res.multiplier}x — won $${res.payout}!`);
       else toast.error("No win this time");
     }, 4200);
   };
