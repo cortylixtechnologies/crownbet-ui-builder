@@ -14,6 +14,39 @@ export type Database = {
   }
   public: {
     Tables: {
+      aviator_rounds: {
+        Row: {
+          cashed_at_multiplier: number | null
+          crash_multiplier: number
+          ended_at: string | null
+          id: string
+          stake: number
+          started_at: string
+          status: string
+          user_id: string
+        }
+        Insert: {
+          cashed_at_multiplier?: number | null
+          crash_multiplier: number
+          ended_at?: string | null
+          id?: string
+          stake: number
+          started_at?: string
+          status?: string
+          user_id: string
+        }
+        Update: {
+          cashed_at_multiplier?: number | null
+          crash_multiplier?: number
+          ended_at?: string | null
+          id?: string
+          stake?: number
+          started_at?: string
+          status?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       bet_selections: {
         Row: {
           bet_id: string
@@ -163,8 +196,10 @@ export type Database = {
       }
       matches: {
         Row: {
+          approved: boolean
           away: string
           created_at: string
+          external_id: string | null
           home: string
           hot: boolean
           id: string
@@ -178,12 +213,15 @@ export type Database = {
           odds_draw: number
           odds_home: number
           score: string | null
+          source: string
           status: string
           updated_at: string
         }
         Insert: {
+          approved?: boolean
           away: string
           created_at?: string
+          external_id?: string | null
           home: string
           hot?: boolean
           id?: string
@@ -197,12 +235,15 @@ export type Database = {
           odds_draw: number
           odds_home: number
           score?: string | null
+          source?: string
           status?: string
           updated_at?: string
         }
         Update: {
+          approved?: boolean
           away?: string
           created_at?: string
+          external_id?: string | null
           home?: string
           hot?: boolean
           id?: string
@@ -216,8 +257,45 @@ export type Database = {
           odds_draw?: number
           odds_home?: number
           score?: string | null
+          source?: string
           status?: string
           updated_at?: string
+        }
+        Relationships: []
+      }
+      mines_rounds: {
+        Row: {
+          created_at: string
+          ended_at: string | null
+          id: string
+          mine_tiles: number[]
+          mines_count: number
+          revealed: number[]
+          stake: number
+          status: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          ended_at?: string | null
+          id?: string
+          mine_tiles: number[]
+          mines_count: number
+          revealed?: number[]
+          stake: number
+          status?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          ended_at?: string | null
+          id?: string
+          mine_tiles?: number[]
+          mines_count?: number
+          revealed?: number[]
+          stake?: number
+          status?: string
+          user_id?: string
         }
         Relationships: []
       }
@@ -343,6 +421,39 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      _game_settle: {
+        Args: {
+          _game: string
+          _meta: Json
+          _multiplier: number
+          _payout: number
+          _stake: number
+          _uid: string
+        }
+        Returns: number
+      }
+      aviator_cashout: {
+        Args: { _claimed_multiplier: number; _round_id: string }
+        Returns: {
+          crash_multiplier: number
+          crashed: boolean
+          multiplier: number
+          new_balance: number
+          payout: number
+        }[]
+      }
+      aviator_resolve_crashed: {
+        Args: { _round_id: string }
+        Returns: undefined
+      }
+      aviator_start: {
+        Args: { _stake: number }
+        Returns: {
+          new_balance: number
+          round_id: string
+          started_at: string
+        }[]
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
@@ -350,21 +461,60 @@ export type Database = {
         }
         Returns: boolean
       }
+      mines_cashout: {
+        Args: { _round_id: string }
+        Returns: {
+          multiplier: number
+          new_balance: number
+          payout: number
+        }[]
+      }
+      mines_pick: {
+        Args: { _round_id: string; _tile: number }
+        Returns: {
+          hit_mine: boolean
+          multiplier: number
+          revealed_count: number
+          status: string
+        }[]
+      }
+      mines_start: {
+        Args: { _mines_count: number; _stake: number }
+        Returns: {
+          new_balance: number
+          round_id: string
+        }[]
+      }
       place_bet: {
         Args: { _selections: Json; _stake: number }
         Returns: string
       }
-      play_game: {
-        Args: {
-          _game: string
-          _meta?: Json
-          _multiplier?: number
-          _payout: number
-          _stake: number
-        }
+      play_coinflip: {
+        Args: { _pick: string; _stake: number }
         Returns: {
           new_balance: number
-          tx_id: string
+          payout: number
+          result: string
+          won: boolean
+        }[]
+      }
+      play_dice: {
+        Args: { _over: boolean; _stake: number; _target: number }
+        Returns: {
+          multiplier: number
+          new_balance: number
+          payout: number
+          roll: number
+          won: boolean
+        }[]
+      }
+      play_wheel: {
+        Args: { _stake: number }
+        Returns: {
+          multiplier: number
+          new_balance: number
+          payout: number
+          segment: number
         }[]
       }
     }

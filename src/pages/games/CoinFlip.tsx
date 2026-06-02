@@ -7,7 +7,7 @@ import { toast } from "sonner";
 import { usePlayGame } from "@/hooks/usePlayGame";
 
 const CoinFlip = () => {
-  const { play, balance, signedIn } = usePlayGame();
+  const { coinflip, balance, signedIn } = usePlayGame();
   const [bet, setBet] = useState(10);
   const [pick, setPick] = useState<"H" | "T">("H");
   const [result, setResult] = useState<"H" | "T" | null>(null);
@@ -18,15 +18,12 @@ const CoinFlip = () => {
     if (bet <= 0 || bet > balance) return toast.error("Invalid bet");
     setSpinning(true);
     setResult(null);
-    setTimeout(async () => {
-      const r: "H" | "T" = Math.random() < 0.48 ? "H" : "T";
-      setResult(r);
+    const res = await coinflip(bet, pick);
+    setTimeout(() => {
       setSpinning(false);
-      const won = r === pick;
-      const payout = won ? bet * 2 : 0;
-      const res = await play({ game: "coinflip", stake: bet, payout, multiplier: won ? 2 : 0, meta: { pick, result: r } });
-      if (!res.ok) return;
-      if (won) toast.success(`You won $${payout}!`);
+      if (!res) return;
+      setResult(res.result as "H" | "T");
+      if (res.won) toast.success(`You won $${res.payout}!`);
       else toast.error("You lost");
     }, 1200);
   };

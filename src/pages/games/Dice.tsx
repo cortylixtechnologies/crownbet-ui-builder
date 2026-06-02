@@ -7,27 +7,24 @@ import { toast } from "sonner";
 import { usePlayGame } from "@/hooks/usePlayGame";
 
 const Dice = () => {
-  const { play, balance, signedIn } = usePlayGame();
+  const { dice, balance, signedIn } = usePlayGame();
   const [bet, setBet] = useState(10);
   const [target, setTarget] = useState(50);
   const [over, setOver] = useState(true);
   const [roll, setRoll] = useState<number | null>(null);
 
-  const winChance = over ? (99 - target) : target;
+  const winChance = over ? 99 - target : target;
   const multiplier = winChance > 0 ? +(98 / winChance).toFixed(2) : 0;
 
   const playRound = async () => {
     if (!signedIn) return toast.error("Please sign in");
     if (bet <= 0 || bet > balance) return toast.error("Invalid bet");
     if (winChance < 1) return toast.error("Adjust target");
-    const r = +(Math.random() * 100).toFixed(2);
-    setRoll(r);
-    const win = over ? r > target : r < target;
-    const payout = win ? +(bet * multiplier).toFixed(2) : 0;
-    const res = await play({ game: "dice", stake: bet, payout, multiplier: win ? multiplier : 0, meta: { roll: r, target, over } });
-    if (!res.ok) return;
-    if (win) toast.success(`Rolled ${r} — won $${payout}`);
-    else toast.error(`Rolled ${r} — lost`);
+    const res = await dice(bet, target, over);
+    if (!res) return;
+    setRoll(Number(res.roll));
+    if (res.won) toast.success(`Rolled ${res.roll} — won $${res.payout}`);
+    else toast.error(`Rolled ${res.roll} — lost`);
   };
 
   return (
