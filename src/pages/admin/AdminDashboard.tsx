@@ -3,6 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { CalendarRange, Radio, Users, Megaphone, TrendingUp, DollarSign } from "lucide-react";
 import { Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
+import { ADMIN_BASE } from "@/config/adminPath";
 
 const Stat = ({ label, value, icon: Icon, accent }: any) => (
   <Card>
