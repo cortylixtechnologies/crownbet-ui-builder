@@ -65,10 +65,10 @@ const AdminDashboard = () => {
         <CardHeader><CardTitle>Quick Actions</CardTitle></CardHeader>
         <CardContent className="grid grid-cols-2 md:grid-cols-4 gap-3">
           {[
-            { to: "/admin/matches", label: "Add Match" },
-            { to: "/admin/live", label: "Manage Live" },
-            { to: "/admin/promotions", label: "New Promo" },
-            { to: "/admin/settings", label: "Site Settings" },
+            { to: `${ADMIN_BASE}/matches`, label: "Add Match" },
+            { to: `${ADMIN_BASE}/live`, label: "Manage Live" },
+            { to: `${ADMIN_BASE}/promotions`, label: "New Promo" },
+            { to: `${ADMIN_BASE}/settings`, label: "Site Settings" },
           ].map((a) => (
             <Link
               key={a.to}
