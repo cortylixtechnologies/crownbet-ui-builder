@@ -2,15 +2,23 @@
 import { createClient } from "npm:@supabase/supabase-js@2";
 import { corsHeaders } from "npm:@supabase/supabase-js@2/cors";
 
-// TheSportsDB league IDs (free API, no key required)
-const LEAGUES = [
-  { id: 4328, name: "English Premier League" },
-  { id: 4335, name: "Spanish La Liga" },
-  { id: 4331, name: "German Bundesliga" },
-  { id: 4332, name: "Italian Serie A" },
-  { id: 4334, name: "French Ligue 1" },
-  { id: 4480, name: "UEFA Champions League" },
-];
+// TheSportsDB FREE endpoints: eventsnextleague is patron-only and was returning
+// nothing for us. eventsday.php with the free test key "3" returns ALL events
+// for a given date and sport — we filter to our target leagues client-side.
+const TSDB_KEY = "3";
+
+const TARGET_LEAGUES = new Set<string>([
+  "English Premier League",
+  "Spanish La Liga",
+  "German Bundesliga",
+  "Italian Serie A",
+  "French Ligue 1",
+  "UEFA Champions League",
+  "UEFA Europa League",
+  "English League Championship",
+  "Portuguese Primeira Liga",
+  "Dutch Eredivisie",
+]);
 
 const fmtDate = (d: Date) => d.toISOString().slice(0, 10);
 const fmtTime = (t: string | null) => (t ? t.slice(0, 5) : "20:00");
@@ -24,23 +32,32 @@ Deno.serve(async (req) => {
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,
     );
 
-    let imported = 0, skipped = 0, updated = 0;
+    let imported = 0, skipped = 0, updated = 0, fetched = 0;
+    const daysAhead = 14;
+    const today = new Date();
 
-    for (const league of LEAGUES) {
-      const url = `https://www.thesportsdb.com/api/v1/json/3/eventsnextleague.php?id=${league.id}`;
+    for (let i = 0; i < daysAhead; i++) {
+      const d = new Date(today);
+      d.setUTCDate(today.getUTCDate() + i);
+      const dateStr = fmtDate(d);
+      const url = `https://www.thesportsdb.com/api/v1/json/${TSDB_KEY}/eventsday.php?d=${dateStr}&s=Soccer`;
       const r = await fetch(url);
       if (!r.ok) continue;
       const json: any = await r.json();
       const events: any[] = json?.events ?? [];
+      fetched += events.length;
 
       for (const ev of events) {
+        if (!TARGET_LEAGUES.has(ev.strLeague)) { skipped++; continue; }
+        if (!ev.strHomeTeam || !ev.strAwayTeam) { skipped++; continue; }
+
         const externalId = `tsdb_${ev.idEvent}`;
         const row = {
           external_id: externalId,
-          league: ev.strLeague || league.name,
+          league: ev.strLeague,
           home: ev.strHomeTeam,
           away: ev.strAwayTeam,
-          match_date: ev.dateEvent || fmtDate(new Date()),
+          match_date: ev.dateEvent || dateStr,
           match_time: fmtTime(ev.strTime),
           odds_home: 2.0,
           odds_draw: 3.2,
@@ -50,14 +67,12 @@ Deno.serve(async (req) => {
           approved: false,
           source: "thesportsdb",
         };
-        if (!row.home || !row.away) { skipped++; continue; }
 
         const { data: existing } = await supabase
-          .from("matches").select("id, approved")
+          .from("matches").select("id")
           .eq("external_id", externalId).maybeSingle();
 
         if (existing) {
-          // Only refresh schedule fields; never touch approved or odds set by admin.
           await supabase.from("matches").update({
             league: row.league, home: row.home, away: row.away,
             match_date: row.match_date, match_time: row.match_time,
@@ -71,7 +86,7 @@ Deno.serve(async (req) => {
     }
 
     return new Response(
-      JSON.stringify({ ok: true, imported, updated, skipped }),
+      JSON.stringify({ ok: true, imported, updated, skipped, fetched, days: daysAhead }),
       { headers: { ...corsHeaders, "Content-Type": "application/json" } },
     );
   } catch (e) {

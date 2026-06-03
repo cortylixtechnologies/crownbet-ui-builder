@@ -13,22 +13,23 @@ import {
   ExternalLink,
 } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
+import { ADMIN_BASE, ADMIN_LOGIN } from "@/config/adminPath";
 
 const items = [
-  { to: "/admin", label: "Dashboard", icon: LayoutDashboard, end: true },
-  { to: "/admin/matches", label: "Matches", icon: CalendarRange },
-  { to: "/admin/live", label: "Live Control", icon: Radio },
-  { to: "/admin/promotions", label: "Promotions", icon: Megaphone },
-  { to: "/admin/games", label: "Games", icon: Gamepad2 },
-  { to: "/admin/users", label: "Users", icon: Users },
-  { to: "/admin/settings", label: "Settings", icon: Settings },
+  { to: ADMIN_BASE, label: "Dashboard", icon: LayoutDashboard, end: true },
+  { to: `${ADMIN_BASE}/matches`, label: "Matches", icon: CalendarRange },
+  { to: `${ADMIN_BASE}/live`, label: "Live Control", icon: Radio },
+  { to: `${ADMIN_BASE}/promotions`, label: "Promotions", icon: Megaphone },
+  { to: `${ADMIN_BASE}/games`, label: "Games", icon: Gamepad2 },
+  { to: `${ADMIN_BASE}/users`, label: "Users", icon: Users },
+  { to: `${ADMIN_BASE}/settings`, label: "Settings", icon: Settings },
 ];
 
 export const AdminLayout = ({ children }: { children?: ReactNode }) => {
   const { isAdmin, signOut, loading } = useAuth();
   const navigate = useNavigate();
   if (loading) return null;
-  if (!isAdmin) return <Navigate to="/admin/login" replace />;
+  if (!isAdmin) return <Navigate to={ADMIN_LOGIN} replace />;
 
   return (
     <div className="min-h-screen flex bg-secondary text-foreground">
@@ -38,7 +39,7 @@ export const AdminLayout = ({ children }: { children?: ReactNode }) => {
             <Crown className="w-5 h-5 text-gold fill-gold" />
             Crown<span className="text-gold">Bet</span>
           </div>
-          <p className="text-[11px] text-white/60 mt-0.5">Admin Panel</p>
+          <p className="text-[11px] text-white/60 mt-0.5">Control Panel</p>
         </div>
         <nav className="flex-1 p-2 space-y-1 overflow-y-auto">
           {items.map(({ to, label, icon: Icon, end }) => (
@@ -66,7 +67,7 @@ export const AdminLayout = ({ children }: { children?: ReactNode }) => {
           <button
             onClick={async () => {
               await signOut();
-              navigate("/admin/login");
+              navigate(ADMIN_LOGIN);
             }}
             className="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-white/80 hover:bg-white/10"
           >

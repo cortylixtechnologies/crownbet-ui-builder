@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
+import { ADMIN_BASE } from "@/config/adminPath";
 
 const AdminLogin = () => {
   const { isAdmin, signIn, user, loading } = useAuth();
@@ -14,7 +15,7 @@ const AdminLogin = () => {
   const [password, setPassword] = useState("");
   const [submitting, setSubmitting] = useState(false);
 
-  if (!loading && isAdmin) return <Navigate to="/admin" replace />;
+  if (!loading && isAdmin) return <Navigate to={ADMIN_BASE} replace />;
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -44,7 +45,7 @@ const AdminLogin = () => {
       return;
     }
     toast.success("Welcome back, Admin");
-    navigate("/admin");
+    navigate(ADMIN_BASE);
   };
 
   return (
