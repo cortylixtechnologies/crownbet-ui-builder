@@ -15,7 +15,7 @@ const AdminLogin = () => {
   const [password, setPassword] = useState("");
   const [submitting, setSubmitting] = useState(false);
 
-  if (!loading && isAdmin) return <Navigate to="/admin" replace />;
+  if (!loading && isAdmin) return <Navigate to={ADMIN_BASE} replace />;
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
