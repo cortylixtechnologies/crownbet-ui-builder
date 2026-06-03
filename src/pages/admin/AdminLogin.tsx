@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
+import { ADMIN_BASE } from "@/config/adminPath";
 
 const AdminLogin = () => {
   const { isAdmin, signIn, user, loading } = useAuth();
