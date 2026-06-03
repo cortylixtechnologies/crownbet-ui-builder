@@ -3,6 +3,7 @@ import { AppLayout } from "@/components/layout/AppLayout";
 import { useAuth } from "@/context/AuthContext";
 import { User, Moon, Wallet, ArrowDownCircle, Receipt, RefreshCw, Gift, Headphones, Info, ChevronRight, Crown, LogOut } from "lucide-react";
 import { toast } from "sonner";
+import { ADMIN_BASE } from "@/config/adminPath";
 
 const Me = () => {
   const { session, profile, signOut, isAdmin } = useAuth();
