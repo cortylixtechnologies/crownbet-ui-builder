@@ -1,8 +1,8 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Trash2, Plus, Radio, Check, Download, RefreshCw } from "lucide-react";
+import { Trash2, Plus, Radio, Check, Download, RefreshCw, Search, X } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -42,11 +42,17 @@ const empty = {
 const AdminMatches = () => {
   const [matches, setMatches] = useState<DbMatch[]>([]);
   const [form, setForm] = useState(empty);
-  const [tab, setTab] = useState<"pending" | "published">("pending");
+  const [tab, setTab] = useState<"pending" | "published" | "all">("pending");
   const [importing, setImporting] = useState(false);
+  const [query, setQuery] = useState("");
+  const [leagueFilter, setLeagueFilter] = useState<string>("all");
+  const [sourceFilter, setSourceFilter] = useState<string>("all");
 
   const load = async () => {
-    const { data } = await supabase.from("matches").select("*").order("match_date", { ascending: true });
+    const { data } = await supabase
+      .from("matches")
+      .select("*")
+      .order("match_date", { ascending: true });
     setMatches((data ?? []) as DbMatch[]);
   };
   useEffect(() => { load(); }, []);
@@ -82,13 +88,55 @@ const AdminMatches = () => {
     const { data, error } = await supabase.functions.invoke("import-fixtures");
     setImporting(false);
     if (error) return toast.error(error.message);
-    toast.success(`Imported ${data?.imported ?? 0}, updated ${data?.updated ?? 0}`);
+    toast.success(
+      `Imported ${data?.imported ?? 0}, updated ${data?.updated ?? 0} (scanned ${data?.fetched ?? 0} events)`
+    );
     load();
   };
 
-  const pending = matches.filter((m) => !m.approved);
-  const published = matches.filter((m) => m.approved);
-  const visible = tab === "pending" ? pending : published;
+  const approveAllFiltered = async (rows: DbMatch[]) => {
+    const ids = rows.filter((m) => !m.approved).map((m) => m.id);
+    if (!ids.length) return toast.info("Nothing to approve");
+    const { error } = await supabase.from("matches").update({ approved: true }).in("id", ids);
+    if (error) return toast.error(error.message);
+    toast.success(`Approved ${ids.length} fixtures`);
+    load();
+  };
+
+  const leagues = useMemo(
+    () => Array.from(new Set(matches.map((m) => m.league))).sort(),
+    [matches]
+  );
+  const sources = useMemo(
+    () => Array.from(new Set(matches.map((m) => m.source))).sort(),
+    [matches]
+  );
+
+  const filtered = useMemo(() => {
+    const q = query.trim().toLowerCase();
+    return matches.filter((m) => {
+      if (tab === "pending" && m.approved) return false;
+      if (tab === "published" && !m.approved) return false;
+      if (leagueFilter !== "all" && m.league !== leagueFilter) return false;
+      if (sourceFilter !== "all" && m.source !== sourceFilter) return false;
+      if (!q) return true;
+      return (
+        m.home.toLowerCase().includes(q) ||
+        m.away.toLowerCase().includes(q) ||
+        m.league.toLowerCase().includes(q) ||
+        m.match_date.toLowerCase().includes(q)
+      );
+    });
+  }, [matches, tab, query, leagueFilter, sourceFilter]);
+
+  const pendingCount = matches.filter((m) => !m.approved).length;
+  const publishedCount = matches.filter((m) => m.approved).length;
+
+  const clearFilters = () => {
+    setQuery("");
+    setLeagueFilter("all");
+    setSourceFilter("all");
+  };
 
   return (
     <div className="space-y-6">
@@ -131,23 +179,66 @@ const AdminMatches = () => {
       </Card>
 
       <Card>
-        <CardHeader>
-          <div className="flex gap-2">
+        <CardHeader className="space-y-3">
+          <div className="flex gap-2 flex-wrap">
             <Button variant={tab === "pending" ? "default" : "outline"} size="sm" onClick={() => setTab("pending")}>
-              Pending Approval ({pending.length})
+              Pending ({pendingCount})
             </Button>
             <Button variant={tab === "published" ? "default" : "outline"} size="sm" onClick={() => setTab("published")}>
-              Published ({published.length})
+              Published ({publishedCount})
+            </Button>
+            <Button variant={tab === "all" ? "default" : "outline"} size="sm" onClick={() => setTab("all")}>
+              All ({matches.length})
             </Button>
           </div>
+          <div className="grid md:grid-cols-[1fr_200px_180px_auto] gap-2">
+            <div className="relative">
+              <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
+              <Input
+                value={query}
+                onChange={(e) => setQuery(e.target.value)}
+                placeholder="Search team, league, date…"
+                className="pl-9"
+              />
+            </div>
+            <select
+              value={leagueFilter}
+              onChange={(e) => setLeagueFilter(e.target.value)}
+              className="h-10 rounded-md border border-input bg-background px-3 text-sm"
+            >
+              <option value="all">All leagues</option>
+              {leagues.map((l) => <option key={l} value={l}>{l}</option>)}
+            </select>
+            <select
+              value={sourceFilter}
+              onChange={(e) => setSourceFilter(e.target.value)}
+              className="h-10 rounded-md border border-input bg-background px-3 text-sm"
+            >
+              <option value="all">All sources</option>
+              {sources.map((s) => <option key={s} value={s}>{s}</option>)}
+            </select>
+            <div className="flex gap-2">
+              {(query || leagueFilter !== "all" || sourceFilter !== "all") && (
+                <Button variant="outline" size="sm" onClick={clearFilters}>
+                  <X className="w-3.5 h-3.5 mr-1" /> Clear
+                </Button>
+              )}
+              {tab !== "published" && filtered.some((m) => !m.approved) && (
+                <Button size="sm" className="bg-success hover:bg-success/90" onClick={() => approveAllFiltered(filtered)}>
+                  <Check className="w-3.5 h-3.5 mr-1" /> Approve all ({filtered.filter((m) => !m.approved).length})
+                </Button>
+              )}
+            </div>
+          </div>
+          <p className="text-xs text-muted-foreground">Showing {filtered.length} of {matches.length}</p>
         </CardHeader>
         <CardContent className="space-y-2">
-          {visible.length === 0 && (
+          {filtered.length === 0 && (
             <p className="text-sm text-muted-foreground py-6 text-center">
-              {tab === "pending" ? "No pending fixtures. Click \"Import fixtures now\" above." : "No published fixtures yet."}
+              No matches. Try clearing filters or click "Import fixtures now".
             </p>
           )}
-          {visible.map((m) => (
+          {filtered.map((m) => (
             <div key={m.id} className="grid grid-cols-[1fr_auto] gap-3 items-center bg-secondary rounded-lg p-3">
               <div>
                 <div className="text-xs text-muted-foreground flex items-center gap-2">
