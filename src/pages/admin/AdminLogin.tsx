@@ -45,7 +45,7 @@ const AdminLogin = () => {
       return;
     }
     toast.success("Welcome back, Admin");
-    navigate("/admin");
+    navigate(ADMIN_BASE);
   };
 
   return (
