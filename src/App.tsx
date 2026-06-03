@@ -77,8 +77,8 @@ const App = () => (
               <Route path="/me" element={<Me />} />
 
               {/* Admin */}
-              <Route path="/admin/login" element={<AdminLogin />} />
-              <Route path="/admin" element={<AdminLayout />}>
+              <Route path={ADMIN_LOGIN} element={<AdminLogin />} />
+              <Route path={ADMIN_BASE} element={<AdminLayout />}>
                 <Route index element={<AdminDashboard />} />
                 <Route path="matches" element={<AdminMatches />} />
                 <Route path="live" element={<AdminLive />} />
