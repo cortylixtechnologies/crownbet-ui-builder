@@ -38,6 +38,11 @@ import AdminPromotions from "./pages/admin/AdminPromotions";
 import AdminUsers from "./pages/admin/AdminUsers";
 import AdminSettings from "./pages/admin/AdminSettings";
 import AdminGames from "./pages/admin/AdminGames";
+import AdminSports from "./pages/admin/AdminSports";
+import AdminCategories from "./pages/admin/AdminCategories";
+import AdminAudit from "./pages/admin/AdminAudit";
+import AdminRisk from "./pages/admin/AdminRisk";
+import AdminReports from "./pages/admin/AdminReports";
 import { ADMIN_BASE, ADMIN_LOGIN } from "./config/adminPath";
 
 const queryClient = new QueryClient();
@@ -86,6 +91,11 @@ const App = () => (
                 <Route path="users" element={<AdminUsers />} />
                 <Route path="settings" element={<AdminSettings />} />
                 <Route path="games" element={<AdminGames />} />
+                <Route path="sports" element={<AdminSports />} />
+                <Route path="categories" element={<AdminCategories />} />
+                <Route path="reports" element={<AdminReports />} />
+                <Route path="risk" element={<AdminRisk />} />
+                <Route path="audit" element={<AdminAudit />} />
               </Route>
 
               <Route path="*" element={<NotFound />} />

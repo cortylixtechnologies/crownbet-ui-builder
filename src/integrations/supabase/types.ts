@@ -14,6 +14,39 @@ export type Database = {
   }
   public: {
     Tables: {
+      audit_log: {
+        Row: {
+          action: string
+          admin_email: string | null
+          admin_id: string | null
+          created_at: string
+          details: Json | null
+          entity: string | null
+          entity_id: string | null
+          id: string
+        }
+        Insert: {
+          action: string
+          admin_email?: string | null
+          admin_id?: string | null
+          created_at?: string
+          details?: Json | null
+          entity?: string | null
+          entity_id?: string | null
+          id?: string
+        }
+        Update: {
+          action?: string
+          admin_email?: string | null
+          admin_id?: string | null
+          created_at?: string
+          details?: Json | null
+          entity?: string | null
+          entity_id?: string | null
+          id?: string
+        }
+        Relationships: []
+      }
       aviator_rounds: {
         Row: {
           cashed_at_multiplier: number | null
@@ -125,6 +158,39 @@ export type Database = {
         }
         Relationships: []
       }
+      game_categories: {
+        Row: {
+          active: boolean
+          created_at: string
+          icon: string | null
+          id: string
+          name: string
+          slug: string
+          sort_order: number
+          updated_at: string
+        }
+        Insert: {
+          active?: boolean
+          created_at?: string
+          icon?: string | null
+          id?: string
+          name: string
+          slug: string
+          sort_order?: number
+          updated_at?: string
+        }
+        Update: {
+          active?: boolean
+          created_at?: string
+          icon?: string | null
+          id?: string
+          name?: string
+          slug?: string
+          sort_order?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
       game_transactions: {
         Row: {
           created_at: string
@@ -165,34 +231,63 @@ export type Database = {
         Row: {
           active: boolean
           category: string
+          category_id: string | null
           color: string
           emoji: string
+          house_edge: number
           id: string
+          maintenance: boolean
+          max_stake: number
+          min_stake: number
+          rtp: number
           slug: string
           sort_order: number
+          thumbnail_url: string | null
           title: string
         }
         Insert: {
           active?: boolean
           category: string
+          category_id?: string | null
           color: string
           emoji: string
+          house_edge?: number
           id?: string
+          maintenance?: boolean
+          max_stake?: number
+          min_stake?: number
+          rtp?: number
           slug: string
           sort_order?: number
+          thumbnail_url?: string | null
           title: string
         }
         Update: {
           active?: boolean
           category?: string
+          category_id?: string | null
           color?: string
           emoji?: string
+          house_edge?: number
           id?: string
+          maintenance?: boolean
+          max_stake?: number
+          min_stake?: number
+          rtp?: number
           slug?: string
           sort_order?: number
+          thumbnail_url?: string | null
           title?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "games_category_id_fkey"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "game_categories"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       matches: {
         Row: {
@@ -206,6 +301,7 @@ export type Database = {
           league: string
           league_icon: string | null
           live: boolean
+          markets: Json | null
           match_date: string
           match_time: string
           minute: string | null
@@ -214,6 +310,7 @@ export type Database = {
           odds_home: number
           score: string | null
           source: string
+          sport: string
           status: string
           updated_at: string
         }
@@ -228,6 +325,7 @@ export type Database = {
           league: string
           league_icon?: string | null
           live?: boolean
+          markets?: Json | null
           match_date: string
           match_time: string
           minute?: string | null
@@ -236,6 +334,7 @@ export type Database = {
           odds_home: number
           score?: string | null
           source?: string
+          sport?: string
           status?: string
           updated_at?: string
         }
@@ -250,6 +349,7 @@ export type Database = {
           league?: string
           league_icon?: string | null
           live?: boolean
+          markets?: Json | null
           match_date?: string
           match_time?: string
           minute?: string | null
@@ -258,6 +358,7 @@ export type Database = {
           odds_home?: number
           score?: string | null
           source?: string
+          sport?: string
           status?: string
           updated_at?: string
         }
@@ -362,6 +463,30 @@ export type Database = {
         }
         Relationships: []
       }
+      risk_settings: {
+        Row: {
+          daily_user_loss_cap: number
+          global_max_win: number
+          id: number
+          max_active_bets_per_user: number
+          updated_at: string
+        }
+        Insert: {
+          daily_user_loss_cap?: number
+          global_max_win?: number
+          id?: number
+          max_active_bets_per_user?: number
+          updated_at?: string
+        }
+        Update: {
+          daily_user_loss_cap?: number
+          global_max_win?: number
+          id?: number
+          max_active_bets_per_user?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
       site_settings: {
         Row: {
           accepting_bets: boolean
@@ -392,6 +517,42 @@ export type Database = {
           site_name?: string
           updated_at?: string
           welcome_bonus_pct?: number
+        }
+        Relationships: []
+      }
+      sports_config: {
+        Row: {
+          active: boolean
+          created_at: string
+          default_margin: number
+          id: string
+          league_external_id: string | null
+          league_name: string
+          sort_order: number
+          sport: string
+          updated_at: string
+        }
+        Insert: {
+          active?: boolean
+          created_at?: string
+          default_margin?: number
+          id?: string
+          league_external_id?: string | null
+          league_name: string
+          sort_order?: number
+          sport: string
+          updated_at?: string
+        }
+        Update: {
+          active?: boolean
+          created_at?: string
+          default_margin?: number
+          id?: string
+          league_external_id?: string | null
+          league_name?: string
+          sort_order?: number
+          sport?: string
+          updated_at?: string
         }
         Relationships: []
       }

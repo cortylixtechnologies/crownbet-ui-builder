@@ -11,6 +11,11 @@ import {
   Crown,
   Gamepad2,
   ExternalLink,
+  Trophy,
+  Tag,
+  BarChart3,
+  ShieldAlert,
+  ClipboardList,
 } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 import { ADMIN_BASE, ADMIN_LOGIN } from "@/config/adminPath";
@@ -18,9 +23,14 @@ import { ADMIN_BASE, ADMIN_LOGIN } from "@/config/adminPath";
 const items = [
   { to: ADMIN_BASE, label: "Dashboard", icon: LayoutDashboard, end: true },
   { to: `${ADMIN_BASE}/matches`, label: "Matches", icon: CalendarRange },
+  { to: `${ADMIN_BASE}/sports`, label: "Sports/Leagues", icon: Trophy },
   { to: `${ADMIN_BASE}/live`, label: "Live Control", icon: Radio },
   { to: `${ADMIN_BASE}/promotions`, label: "Promotions", icon: Megaphone },
   { to: `${ADMIN_BASE}/games`, label: "Games", icon: Gamepad2 },
+  { to: `${ADMIN_BASE}/categories`, label: "Categories", icon: Tag },
+  { to: `${ADMIN_BASE}/reports`, label: "Reports", icon: BarChart3 },
+  { to: `${ADMIN_BASE}/risk`, label: "Risk Controls", icon: ShieldAlert },
+  { to: `${ADMIN_BASE}/audit`, label: "Audit Log", icon: ClipboardList },
   { to: `${ADMIN_BASE}/users`, label: "Users", icon: Users },
   { to: `${ADMIN_BASE}/settings`, label: "Settings", icon: Settings },
 ];

@@ -8,6 +8,7 @@ import { supabase } from "@/integrations/supabase/client";
 
 type DbMatch = {
   id: string;
+  sport: string;
   league: string;
   home: string;
   away: string;
@@ -25,6 +26,7 @@ type DbMatch = {
 };
 
 const empty = {
+  sport: "soccer",
   league: "",
   home: "",
   away: "",
@@ -39,6 +41,8 @@ const empty = {
   source: "manual",
 };
 
+const SPORTS = ["soccer","basketball","tennis","ice hockey","american football","baseball","rugby","cricket","motorsport","esports"];
+
 const AdminMatches = () => {
   const [matches, setMatches] = useState<DbMatch[]>([]);
   const [form, setForm] = useState(empty);
@@ -47,6 +51,8 @@ const AdminMatches = () => {
   const [query, setQuery] = useState("");
   const [leagueFilter, setLeagueFilter] = useState<string>("all");
   const [sourceFilter, setSourceFilter] = useState<string>("all");
+
+  const [sportFilter, setSportFilter] = useState<string>("all");
 
   const load = async () => {
     const { data } = await supabase
@@ -117,6 +123,7 @@ const AdminMatches = () => {
     return matches.filter((m) => {
       if (tab === "pending" && m.approved) return false;
       if (tab === "published" && !m.approved) return false;
+      if (sportFilter !== "all" && (m.sport ?? "soccer") !== sportFilter) return false;
       if (leagueFilter !== "all" && m.league !== leagueFilter) return false;
       if (sourceFilter !== "all" && m.source !== sourceFilter) return false;
       if (!q) return true;
@@ -127,13 +134,14 @@ const AdminMatches = () => {
         m.match_date.toLowerCase().includes(q)
       );
     });
-  }, [matches, tab, query, leagueFilter, sourceFilter]);
+  }, [matches, tab, query, sportFilter, leagueFilter, sourceFilter]);
 
   const pendingCount = matches.filter((m) => !m.approved).length;
   const publishedCount = matches.filter((m) => m.approved).length;
 
   const clearFilters = () => {
     setQuery("");
+    setSportFilter("all");
     setLeagueFilter("all");
     setSourceFilter("all");
   };
@@ -157,6 +165,10 @@ const AdminMatches = () => {
         </CardHeader>
         <CardContent>
           <form onSubmit={submit} className="grid md:grid-cols-3 gap-3">
+            <select className="h-10 rounded-md border border-input bg-background px-3 text-sm"
+              value={form.sport} onChange={(e) => setForm({ ...form, sport: e.target.value })}>
+              {SPORTS.map((s) => <option key={s} value={s}>{s}</option>)}
+            </select>
             <Input placeholder="League" value={form.league} onChange={(e) => setForm({ ...form, league: e.target.value })} />
             <Input placeholder="Home Team" value={form.home} onChange={(e) => setForm({ ...form, home: e.target.value })} />
             <Input placeholder="Away Team" value={form.away} onChange={(e) => setForm({ ...form, away: e.target.value })} />
@@ -191,7 +203,7 @@ const AdminMatches = () => {
               All ({matches.length})
             </Button>
           </div>
-          <div className="grid md:grid-cols-[1fr_200px_180px_auto] gap-2">
+          <div className="grid md:grid-cols-[1fr_160px_200px_180px_auto] gap-2">
             <div className="relative">
               <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
               <Input
@@ -201,6 +213,14 @@ const AdminMatches = () => {
                 className="pl-9"
               />
             </div>
+            <select
+              value={sportFilter}
+              onChange={(e) => setSportFilter(e.target.value)}
+              className="h-10 rounded-md border border-input bg-background px-3 text-sm capitalize"
+            >
+              <option value="all">All sports</option>
+              {SPORTS.map((s) => <option key={s} value={s} className="capitalize">{s}</option>)}
+            </select>
             <select
               value={leagueFilter}
               onChange={(e) => setLeagueFilter(e.target.value)}
@@ -241,7 +261,8 @@ const AdminMatches = () => {
           {filtered.map((m) => (
             <div key={m.id} className="grid grid-cols-[1fr_auto] gap-3 items-center bg-secondary rounded-lg p-3">
               <div>
-                <div className="text-xs text-muted-foreground flex items-center gap-2">
+                <div className="text-xs text-muted-foreground flex items-center gap-2 flex-wrap">
+                  <span className="px-1.5 py-0.5 rounded bg-accent/30 text-foreground text-[10px] font-bold uppercase">{m.sport ?? "soccer"}</span>
                   {m.league} · {m.match_date} {m.match_time}
                   {m.source !== "manual" && (
                     <span className="px-1.5 py-0.5 rounded bg-primary/20 text-primary text-[10px] font-bold uppercase">{m.source}</span>

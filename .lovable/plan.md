@@ -1,67 +1,110 @@
-# Plan
 
-## 1. Auto-import football fixtures
+# Expand games library + admin management
 
-**Data source:** TheSportsDB free API (no key, no signup). Pulls upcoming fixtures for major leagues (EPL, La Liga, Serie A, Bundesliga, Ligue 1, Champions League). Easy to swap later.
+Big build, split into 4 phases so each is shippable on its own. All new RNG runs server-side (same pattern as `play_coinflip`, `play_dice`, etc.) so the existing security model holds.
 
-**Schema additions on `matches`:**
-- `external_id text unique` — TheSportsDB event id, prevents duplicates on re-imports
-- `approved boolean default false` — only approved matches are visible to users
-- `source text default 'manual'` — `'thesportsdb'` for imported rows
-- Public `anyone read matches` policy tightened to `approved = true OR live = true`
-- Manually-added matches default to `approved = true`
+---
 
-**Edge function `import-fixtures`** (verify_jwt off, callable by cron + admin):
-- Fetches next 14 days of fixtures for the configured leagues from TheSportsDB
-- Upserts into `matches` with `approved=false`, placeholder odds (2.0/3.2/3.5), `source='thesportsdb'`
-- Returns counts of imported / skipped / updated
+## Phase 1 — More sports (TheSportsDB)
 
-**Scheduled run:** `pg_cron` + `pg_net` job invokes the edge function every 6 hours.
+Extend the existing `import-fixtures` edge function to pull additional sports instead of soccer-only.
 
-**Admin UI (`AdminMatches.tsx`):**
-- Tabs: "Pending Approval" (imported, not approved) and "Live/Published"
-- Inline odds editor (already there) + "Approve & Publish" button → sets `approved=true`
-- "Run Import Now" button to trigger the edge function on demand
+- Add sport filter: `soccer`, `basketball`, `tennis`, `ice hockey`, `american football`, `baseball`, `cricket`, `rugby`, `motorsport`, `esports`.
+- Add `sport text` column to `matches` (default `'soccer'`); backfill existing rows.
+- Add `markets jsonb` column to `matches` for sports that aren't 1X2 (tennis = 2-way, basketball = with handicap, etc.). Football keeps using `odds_home/draw/away`.
+- `AdminMatches.tsx`: add **Sport** filter dropdown alongside league/source filters; show sport badge on each row.
+- Public `League.tsx` / home: group matches by sport tab.
 
-**User-facing pages:** `useMatches` already reads from `matches` — it'll filter to approved rows automatically via RLS, no code change needed.
+Imported leagues per sport are configurable from a new `sports_config` table (admin-editable in Phase 2 Categories Manager).
 
-## 2. Security fixes
+---
 
-**Error: client-supplied betting odds**
-Rewrite `place_bet` to look up `odds_home/draw/away` from the `matches` row using each selection's `match_id` + `pick`. Ignore client-sent odd. Reject if `match_id` is null, match doesn't exist, isn't approved, or `live=false` and kickoff has passed (best-effort).
+## Phase 2 — Virtuals suite (server-scheduled)
 
-**Error: users can update own balance**
-Replace the broad `users update own profile` policy with one that blocks balance changes: `WITH CHECK (balance = (SELECT balance FROM profiles WHERE id = auth.uid()))`. Balance only mutates via SECURITY DEFINER RPCs.
+New module — fully simulated, runs 24/7, no external API.
 
-**Error: client-controlled casino payouts**
-Move all RNG server-side. Drop the old `play_game(_payout, …)` RPC. Add per-game SECURITY DEFINER RPCs that accept only inputs and compute outcomes with `random()`:
-- `play_coinflip(stake, pick)` — server flips
-- `play_dice(stake, target, over)` — server rolls, multiplier from win-chance
-- `play_wheel(stake)` — server picks segment from a fixed table baked into the function
-- `play_mines_start(stake, mines_count)` → returns round id with hidden mine layout
-- `play_mines_pick(round_id, tile)` → reveals tile, returns hit/miss/multiplier
-- `play_mines_cashout(round_id)` → pays current multiplier
-- `play_aviator_round()` — creates a round with a hidden seeded crash point (server-only)
-- `play_aviator_bet(round_id, stake)` and `play_aviator_cashout(round_id, multiplier)` — pays only if multiplier ≤ crash
-Frontend keeps its visuals/animations but now reads outcomes from server responses.
+**Schema**
+- `virtual_games` — `code` (vfootball / vhorses / vgreyhounds / vpenalty / vinstant_football), `display_name`, `round_seconds`, `active`, `rtp`.
+- `virtual_rounds` — `game_code`, `round_no`, `starts_at`, `ends_at`, `status` (`upcoming`/`betting`/`running`/`settled`), `result jsonb`, `seed`.
+- `virtual_participants` — per round: name, odds, finishing_position (set on settlement).
+- `virtual_bets` — `user_id`, `round_id`, `pick`, `stake`, `odd`, `status`, `payout`.
 
-**Warning: hardcoded admin email**
-Drop the email branch from `handle_new_user`. Remove the "register with admin email" hint from `AdminLogin.tsx`. Existing admin row preserved.
+**Server logic** (SECURITY DEFINER RPCs)
+- `vg_place_bet(round_id, pick, stake)` — odds looked up server-side.
+- `vg_settle_round(round_id)` — generates result with seeded RNG, pays winners.
+- Edge function `virtuals-scheduler` invoked by `pg_cron` every minute: closes betting, runs settlement, creates next round per game.
 
-**Warning: SECURITY DEFINER executable by anon/authenticated (linter)**
-`REVOKE EXECUTE … FROM PUBLIC, anon` on every SECURITY DEFINER function, then `GRANT EXECUTE … TO authenticated` only on user-facing RPCs (`place_bet`, `play_*`). `has_role`, `handle_new_user`, `update_updated_at_column` stay internal — no grants.
+**UI**
+- `src/pages/virtuals/VirtualFootball.tsx`, `VirtualHorses.tsx`, `VirtualGreyhounds.tsx`, `VirtualPenalty.tsx`, `InstantFootball.tsx` — countdown, participants, betslip, live animation (CSS only).
+- Wire from existing `Virtuals.tsx` grid.
 
-## Files touched
+---
 
-- `supabase/migrations/<new>.sql` — schema, policies, all RPCs, grants, cron job
-- `supabase/functions/import-fixtures/index.ts` — new edge function
-- `src/pages/admin/AdminMatches.tsx` — Pending/Published tabs, approve button, run-import button
-- `src/pages/admin/AdminLogin.tsx` — remove admin-email hint
-- `src/hooks/usePlayGame.ts` — replaced by per-game helpers
-- `src/pages/games/{CoinFlip,Dice,Wheel,Mines,Aviator}.tsx` — call new RPCs, trust server result
+## Phase 3 — Casino + Lottery + Jackpot
 
-## Out of scope (say so if you want them)
+**Casino RNG games** — same pattern as `play_dice`:
+- `play_roulette(stake, bets jsonb)` — European wheel, server spins.
+- `play_blackjack_*` — `start/hit/stand/double` round-based RPCs with `blackjack_rounds` table.
+- `play_baccarat(stake, side)` — server deals.
+- `play_plinko(stake, risk, rows)`, `play_limbo(stake, target)`, `play_hilo_*`, `play_keno(stake, picks)`, `play_tower_*`.
 
-- New Virtuals / Instants games (you dropped this from the latest message)
-- Auto-settlement of bets when matches finish — admin still settles manually
-- Live score sync from API
+Pages under `src/pages/games/`, registered in `games` table so `AdminGames` controls them.
+
+**Lottery**
+- `lottery_draws` (draw_no, type 5/90 or 6/49, draw_at, winning_numbers, status).
+- `lottery_tickets` (user, draw, picks, stake, prize, status).
+- Cron settles draw and pays tiered prizes.
+
+**Jackpot pools**
+- `jackpots` — name, prize, entry_fee, deadline, match_count, status, rules.
+- `jackpot_matches` — link to `matches`.
+- `jackpot_entries` — user picks, correct_count, prize.
+- Auto-evaluates when all linked matches finish.
+
+---
+
+## Phase 4 — Admin management
+
+**Categories & game settings** (`AdminGames` upgrade)
+- Add `game_categories` table (name, slug, sort, icon, active) — replaces hardcoded category strings.
+- Extend `games` row: `rtp`, `min_stake`, `max_stake`, `house_edge`, `maintenance`, `thumbnail_url`, `category_id`.
+- New `AdminCategories.tsx` for CRUD + reorder.
+- `AdminGames.tsx`: per-game settings drawer (RTP, stake caps, thumbnail upload to a new `game-thumbnails` storage bucket, maintenance toggle).
+
+**Virtuals scheduler** (`AdminVirtuals.tsx`)
+- List virtual games, edit round duration, pause/resume, see next round time, force-settle button.
+
+**Jackpot builder** (`AdminJackpots.tsx`)
+- Create jackpot, pick approved matches via match-search modal, set prize/entry fee/deadline, view entries leaderboard, manual settle.
+
+**Reports** (`AdminReports.tsx`)
+- GGR per game (stake - payout grouped by `game_transactions.game` + virtuals + bets).
+- Top winners / top losers (date range filter).
+- Game transactions table with filters (game, user, date, min net).
+- CSV export.
+
+**Risk controls** (`AdminRisk.tsx` + `risk_settings` table)
+- Global max win cap, per-game stake caps (already in game row), per-user daily loss limit, per-user max active bets.
+- Enforced inside `place_bet`, `play_*`, `vg_place_bet` RPCs.
+- Suspicious-pattern flag list (auto-flag rules: rapid-fire bets, win-rate > threshold) → `risk_flags` table, admin can ban/freeze.
+
+**Audit log** (`audit_log` table + `AdminAudit.tsx`)
+- Logs every admin write (approve match, change odds, adjust balance, change settings, settle jackpot).
+- Insertion via a `log_admin_action()` helper called inside admin RPCs and from `AdminLayout` for client-side writes.
+- Read-only UI with filter by admin / action / date.
+
+---
+
+## Suggested order
+
+I'd ship in this order so each phase is usable on its own:
+
+```text
+P1 sports importer        →  immediate value, low risk
+P4 categories + settings  →  needed to organize new games coming next
+P2 virtuals suite         →  biggest revenue add-on
+P3 casino/lottery/jackpot →  largest surface area, do last
+P4 reports/risk/audit     →  layered in alongside P2/P3
+```
+
+If you want everything in one go I'll do it, but it'll be a very large set of migrations and files. **Reply with which phase(s) to start with** (e.g. "P1+P4 first" or "do all") and I'll begin.
