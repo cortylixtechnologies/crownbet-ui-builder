@@ -8,6 +8,7 @@ import { supabase } from "@/integrations/supabase/client";
 
 type DbMatch = {
   id: string;
+  sport: string;
   league: string;
   home: string;
   away: string;
@@ -25,6 +26,7 @@ type DbMatch = {
 };
 
 const empty = {
+  sport: "soccer",
   league: "",
   home: "",
   away: "",
@@ -38,6 +40,8 @@ const empty = {
   approved: true,
   source: "manual",
 };
+
+const SPORTS = ["soccer","basketball","tennis","ice hockey","american football","baseball","rugby","cricket","motorsport","esports"];
 
 const AdminMatches = () => {
   const [matches, setMatches] = useState<DbMatch[]>([]);
