@@ -91,6 +91,11 @@ const App = () => (
                 <Route path="users" element={<AdminUsers />} />
                 <Route path="settings" element={<AdminSettings />} />
                 <Route path="games" element={<AdminGames />} />
+                <Route path="sports" element={<AdminSports />} />
+                <Route path="categories" element={<AdminCategories />} />
+                <Route path="reports" element={<AdminReports />} />
+                <Route path="risk" element={<AdminRisk />} />
+                <Route path="audit" element={<AdminAudit />} />
               </Route>
 
               <Route path="*" element={<NotFound />} />
