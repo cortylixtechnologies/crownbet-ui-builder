@@ -123,6 +123,7 @@ const AdminMatches = () => {
     return matches.filter((m) => {
       if (tab === "pending" && m.approved) return false;
       if (tab === "published" && !m.approved) return false;
+      if (sportFilter !== "all" && (m.sport ?? "soccer") !== sportFilter) return false;
       if (leagueFilter !== "all" && m.league !== leagueFilter) return false;
       if (sourceFilter !== "all" && m.source !== sourceFilter) return false;
       if (!q) return true;
@@ -133,7 +134,7 @@ const AdminMatches = () => {
         m.match_date.toLowerCase().includes(q)
       );
     });
-  }, [matches, tab, query, leagueFilter, sourceFilter]);
+  }, [matches, tab, query, sportFilter, leagueFilter, sourceFilter]);
 
   const pendingCount = matches.filter((m) => !m.approved).length;
   const publishedCount = matches.filter((m) => m.approved).length;
