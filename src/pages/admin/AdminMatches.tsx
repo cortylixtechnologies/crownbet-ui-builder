@@ -141,6 +141,7 @@ const AdminMatches = () => {
 
   const clearFilters = () => {
     setQuery("");
+    setSportFilter("all");
     setLeagueFilter("all");
     setSourceFilter("all");
   };
