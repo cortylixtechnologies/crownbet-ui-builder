@@ -261,7 +261,8 @@ const AdminMatches = () => {
           {filtered.map((m) => (
             <div key={m.id} className="grid grid-cols-[1fr_auto] gap-3 items-center bg-secondary rounded-lg p-3">
               <div>
-                <div className="text-xs text-muted-foreground flex items-center gap-2">
+                <div className="text-xs text-muted-foreground flex items-center gap-2 flex-wrap">
+                  <span className="px-1.5 py-0.5 rounded bg-accent/30 text-foreground text-[10px] font-bold uppercase">{m.sport ?? "soccer"}</span>
                   {m.league} · {m.match_date} {m.match_time}
                   {m.source !== "manual" && (
                     <span className="px-1.5 py-0.5 rounded bg-primary/20 text-primary text-[10px] font-bold uppercase">{m.source}</span>
