@@ -165,6 +165,10 @@ const AdminMatches = () => {
         </CardHeader>
         <CardContent>
           <form onSubmit={submit} className="grid md:grid-cols-3 gap-3">
+            <select className="h-10 rounded-md border border-input bg-background px-3 text-sm"
+              value={form.sport} onChange={(e) => setForm({ ...form, sport: e.target.value })}>
+              {SPORTS.map((s) => <option key={s} value={s}>{s}</option>)}
+            </select>
             <Input placeholder="League" value={form.league} onChange={(e) => setForm({ ...form, league: e.target.value })} />
             <Input placeholder="Home Team" value={form.home} onChange={(e) => setForm({ ...form, home: e.target.value })} />
             <Input placeholder="Away Team" value={form.away} onChange={(e) => setForm({ ...form, away: e.target.value })} />
