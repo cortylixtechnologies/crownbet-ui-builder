@@ -203,7 +203,7 @@ const AdminMatches = () => {
               All ({matches.length})
             </Button>
           </div>
-          <div className="grid md:grid-cols-[1fr_200px_180px_auto] gap-2">
+          <div className="grid md:grid-cols-[1fr_160px_200px_180px_auto] gap-2">
             <div className="relative">
               <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
               <Input
@@ -213,6 +213,14 @@ const AdminMatches = () => {
                 className="pl-9"
               />
             </div>
+            <select
+              value={sportFilter}
+              onChange={(e) => setSportFilter(e.target.value)}
+              className="h-10 rounded-md border border-input bg-background px-3 text-sm capitalize"
+            >
+              <option value="all">All sports</option>
+              {SPORTS.map((s) => <option key={s} value={s} className="capitalize">{s}</option>)}
+            </select>
             <select
               value={leagueFilter}
               onChange={(e) => setLeagueFilter(e.target.value)}
