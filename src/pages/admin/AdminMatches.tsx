@@ -52,6 +52,8 @@ const AdminMatches = () => {
   const [leagueFilter, setLeagueFilter] = useState<string>("all");
   const [sourceFilter, setSourceFilter] = useState<string>("all");
 
+  const [sportFilter, setSportFilter] = useState<string>("all");
+
   const load = async () => {
     const { data } = await supabase
       .from("matches")
