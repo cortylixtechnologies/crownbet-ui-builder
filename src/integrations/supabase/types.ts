@@ -158,6 +158,45 @@ export type Database = {
         }
         Relationships: []
       }
+      blackjack_rounds: {
+        Row: {
+          created_at: string
+          dealer: number[]
+          deck: number[]
+          ended_at: string | null
+          id: string
+          payout: number
+          player: number[]
+          stake: number
+          status: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          dealer: number[]
+          deck: number[]
+          ended_at?: string | null
+          id?: string
+          payout?: number
+          player: number[]
+          stake: number
+          status?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          dealer?: number[]
+          deck?: number[]
+          ended_at?: string | null
+          id?: string
+          payout?: number
+          player?: number[]
+          stake?: number
+          status?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       game_categories: {
         Row: {
           active: boolean
@@ -285,6 +324,195 @@ export type Database = {
             columns: ["category_id"]
             isOneToOne: false
             referencedRelation: "game_categories"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      jackpot_entries: {
+        Row: {
+          correct_count: number
+          created_at: string
+          id: string
+          jackpot_id: string
+          picks: Json
+          prize: number
+          status: string
+          user_id: string
+        }
+        Insert: {
+          correct_count?: number
+          created_at?: string
+          id?: string
+          jackpot_id: string
+          picks: Json
+          prize?: number
+          status?: string
+          user_id: string
+        }
+        Update: {
+          correct_count?: number
+          created_at?: string
+          id?: string
+          jackpot_id?: string
+          picks?: Json
+          prize?: number
+          status?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "jackpot_entries_jackpot_id_fkey"
+            columns: ["jackpot_id"]
+            isOneToOne: false
+            referencedRelation: "jackpots"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      jackpot_matches: {
+        Row: {
+          id: string
+          jackpot_id: string
+          match_id: string
+          result: string | null
+        }
+        Insert: {
+          id?: string
+          jackpot_id: string
+          match_id: string
+          result?: string | null
+        }
+        Update: {
+          id?: string
+          jackpot_id?: string
+          match_id?: string
+          result?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "jackpot_matches_jackpot_id_fkey"
+            columns: ["jackpot_id"]
+            isOneToOne: false
+            referencedRelation: "jackpots"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      jackpots: {
+        Row: {
+          created_at: string
+          deadline: string
+          entry_fee: number
+          id: string
+          name: string
+          prize: number
+          settled_at: string | null
+          status: string
+        }
+        Insert: {
+          created_at?: string
+          deadline: string
+          entry_fee?: number
+          id?: string
+          name: string
+          prize?: number
+          settled_at?: string | null
+          status?: string
+        }
+        Update: {
+          created_at?: string
+          deadline?: string
+          entry_fee?: number
+          id?: string
+          name?: string
+          prize?: number
+          settled_at?: string | null
+          status?: string
+        }
+        Relationships: []
+      }
+      lottery_draws: {
+        Row: {
+          created_at: string
+          draw_at: string
+          draw_no: number
+          game_type: string
+          id: string
+          jackpot: number
+          prize_pool: number
+          settled_at: string | null
+          status: string
+          ticket_price: number
+          winning_numbers: number[] | null
+        }
+        Insert: {
+          created_at?: string
+          draw_at: string
+          draw_no?: number
+          game_type?: string
+          id?: string
+          jackpot?: number
+          prize_pool?: number
+          settled_at?: string | null
+          status?: string
+          ticket_price?: number
+          winning_numbers?: number[] | null
+        }
+        Update: {
+          created_at?: string
+          draw_at?: string
+          draw_no?: number
+          game_type?: string
+          id?: string
+          jackpot?: number
+          prize_pool?: number
+          settled_at?: string | null
+          status?: string
+          ticket_price?: number
+          winning_numbers?: number[] | null
+        }
+        Relationships: []
+      }
+      lottery_tickets: {
+        Row: {
+          created_at: string
+          draw_id: string
+          id: string
+          matched: number
+          numbers: number[]
+          prize: number
+          stake: number
+          status: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          draw_id: string
+          id?: string
+          matched?: number
+          numbers: number[]
+          prize?: number
+          stake: number
+          status?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          draw_id?: string
+          id?: string
+          matched?: number
+          numbers?: number[]
+          prize?: number
+          stake?: number
+          status?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "lottery_tickets_draw_id_fkey"
+            columns: ["draw_id"]
+            isOneToOne: false
+            referencedRelation: "lottery_draws"
             referencedColumns: ["id"]
           },
         ]
@@ -582,6 +810,8 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      _bj_hand_value: { Args: { _h: number[] }; Returns: number }
+      _bj_new_deck: { Args: never; Returns: number[] }
       _game_settle: {
         Args: {
           _game: string
@@ -615,12 +845,71 @@ export type Database = {
           started_at: string
         }[]
       }
+      blackjack_hit: {
+        Args: { _round_id: string }
+        Returns: {
+          new_balance: number
+          player: number[]
+          status: string
+          value: number
+        }[]
+      }
+      blackjack_stand: {
+        Args: { _round_id: string }
+        Returns: {
+          dealer: number[]
+          new_balance: number
+          payout: number
+          player: number[]
+          status: string
+        }[]
+      }
+      blackjack_start: {
+        Args: { _stake: number }
+        Returns: {
+          dealer_up: number
+          new_balance: number
+          player: number[]
+          round_id: string
+          status: string
+          value: number
+        }[]
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
           _user_id: string
         }
         Returns: boolean
+      }
+      jackpot_enter: {
+        Args: { _jp_id: string; _picks: Json }
+        Returns: {
+          entry_id: string
+          new_balance: number
+        }[]
+      }
+      jackpot_settle: {
+        Args: { _jp_id: string }
+        Returns: {
+          total_paid: number
+          winners: number
+        }[]
+      }
+      lottery_buy_ticket: {
+        Args: { _draw_id: string; _numbers: number[] }
+        Returns: {
+          new_balance: number
+          ticket_id: string
+        }[]
+      }
+      lottery_settle_draw: {
+        Args: { _draw_id: string }
+        Returns: {
+          tickets_settled: number
+          total_paid: number
+          winning_numbers: number[]
+        }[]
       }
       mines_cashout: {
         Args: { _round_id: string }
@@ -667,6 +956,28 @@ export type Database = {
           payout: number
           roll: number
           won: boolean
+        }[]
+      }
+      play_roulette: {
+        Args: { _bets: Json }
+        Returns: {
+          new_balance: number
+          spin: number
+          total_payout: number
+          total_stake: number
+          wins: Json
+        }[]
+      }
+      play_sicbo: {
+        Args: { _bets: Json }
+        Returns: {
+          d1: number
+          d2: number
+          d3: number
+          new_balance: number
+          total_payout: number
+          total_stake: number
+          wins: Json
         }[]
       }
       play_wheel: {

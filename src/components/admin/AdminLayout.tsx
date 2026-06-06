@@ -16,6 +16,8 @@ import {
   BarChart3,
   ShieldAlert,
   ClipboardList,
+  Ticket,
+  Coins,
 } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 import { ADMIN_BASE, ADMIN_LOGIN } from "@/config/adminPath";
@@ -28,6 +30,8 @@ const items = [
   { to: `${ADMIN_BASE}/promotions`, label: "Promotions", icon: Megaphone },
   { to: `${ADMIN_BASE}/games`, label: "Games", icon: Gamepad2 },
   { to: `${ADMIN_BASE}/categories`, label: "Categories", icon: Tag },
+  { to: `${ADMIN_BASE}/lottery`, label: "Lottery", icon: Ticket },
+  { to: `${ADMIN_BASE}/jackpots`, label: "Jackpots", icon: Coins },
   { to: `${ADMIN_BASE}/reports`, label: "Reports", icon: BarChart3 },
   { to: `${ADMIN_BASE}/risk`, label: "Risk Controls", icon: ShieldAlert },
   { to: `${ADMIN_BASE}/audit`, label: "Audit Log", icon: ClipboardList },

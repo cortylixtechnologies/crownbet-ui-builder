@@ -29,6 +29,13 @@ import CoinFlip from "./pages/games/CoinFlip";
 import Dice from "./pages/games/Dice";
 import Mines from "./pages/games/Mines";
 import Wheel from "./pages/games/Wheel";
+import Roulette from "./pages/games/Roulette";
+import SicBo from "./pages/games/SicBo";
+import Blackjack from "./pages/games/Blackjack";
+import Lottery from "./pages/Lottery";
+import JackpotDetail from "./pages/JackpotDetail";
+import AdminLottery from "./pages/admin/AdminLottery";
+import AdminJackpots from "./pages/admin/AdminJackpots";
 import AdminLogin from "./pages/admin/AdminLogin";
 import { AdminLayout } from "./components/admin/AdminLayout";
 import AdminDashboard from "./pages/admin/AdminDashboard";
@@ -64,6 +71,11 @@ const App = () => (
               <Route path="/games/dice" element={<Dice />} />
               <Route path="/games/mines" element={<Mines />} />
               <Route path="/games/wheel" element={<Wheel />} />
+              <Route path="/games/roulette" element={<Roulette />} />
+              <Route path="/games/sic-bo" element={<SicBo />} />
+              <Route path="/games/blackjack" element={<Blackjack />} />
+              <Route path="/lottery" element={<Lottery />} />
+              <Route path="/jackpot/:id" element={<JackpotDetail />} />
               <Route path="/search" element={<Search />} />
               <Route path="/live" element={<Live />} />
               <Route path="/load-code" element={<LoadCode />} />
@@ -93,6 +105,8 @@ const App = () => (
                 <Route path="games" element={<AdminGames />} />
                 <Route path="sports" element={<AdminSports />} />
                 <Route path="categories" element={<AdminCategories />} />
+                <Route path="lottery" element={<AdminLottery />} />
+                <Route path="jackpots" element={<AdminJackpots />} />
                 <Route path="reports" element={<AdminReports />} />
                 <Route path="risk" element={<AdminRisk />} />
                 <Route path="audit" element={<AdminAudit />} />
