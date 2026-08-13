@@ -1,6 +1,7 @@
 import { useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/context/AuthContext";
+import { useAuthGate } from "@/context/AuthGateContext";
 import { toast } from "sonner";
 
 /**
@@ -9,11 +10,16 @@ import { toast } from "sonner";
  */
 export const usePlayGame = () => {
   const { user, profile, refreshProfile } = useAuth();
+  const { openGate } = useAuthGate();
   const signedIn = !!user;
   const balance = Number(profile?.balance ?? 0);
 
   const handle = useCallback(
     async <T,>(builder: any): Promise<T | null> => {
+      if (!signedIn) {
+        openGate("Sign up or log in to play with real balance.");
+        return null;
+      }
       const { data, error } = await builder;
       if (error) {
         toast.error(error.message);
@@ -22,8 +28,9 @@ export const usePlayGame = () => {
       await refreshProfile();
       return (Array.isArray(data) ? data[0] : data) as T;
     },
-    [refreshProfile]
+    [refreshProfile, signedIn, openGate]
   );
+
 
   return {
     signedIn,
