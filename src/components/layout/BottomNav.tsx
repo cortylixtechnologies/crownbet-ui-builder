@@ -29,7 +29,7 @@ export const BottomNav = () => {
         </NavLink>
       )}
 
-      <nav className="fixed bottom-0 left-0 right-0 z-40 bg-surface-dark text-surface-dark-foreground border-t border-surface-dark-muted">
+      <nav className="lg:hidden fixed bottom-0 left-0 right-0 z-40 bg-surface-dark text-surface-dark-foreground border-t border-surface-dark-muted">
         <div className="grid grid-cols-5">
           {items.map(({ to, label, icon: Icon, accent }) => (
             <NavLink
