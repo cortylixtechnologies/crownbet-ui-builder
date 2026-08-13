@@ -6,6 +6,8 @@ import { useMatches } from "@/hooks/useMatches";
 import { usePromotions } from "@/hooks/usePromotions";
 import { slugify } from "@/data/mockData";
 import { Globe, Tv, Share2, Plane, Trophy, MoreHorizontal } from "lucide-react";
+import { DesktopHome } from "@/components/home/DesktopHome";
+
 
 const quickLinks = [
   { label: "All Sports", icon: Globe, to: "/menu" },
@@ -35,7 +37,11 @@ const Index = () => {
 
   return (
     <AppLayout>
+      <DesktopHome matches={featured} promos={promos as any} />
+
+      <div className="lg:hidden">
       <section className="px-4 py-3 overflow-x-auto scrollbar-hide">
+
         <div className="flex gap-3">
           {promos.map((p) => (
             <Link key={p.id} to={p.to_url}
@@ -153,7 +159,9 @@ const Index = () => {
           {live.length === 0 && <div className="text-white/60 text-sm text-center py-6">No live matches right now.</div>}
         </div>
       </section>
+      </div>
     </AppLayout>
+
   );
 };
 
