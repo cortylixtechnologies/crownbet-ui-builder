@@ -1,6 +1,8 @@
 import { ReactNode } from "react";
 import { Header } from "./Header";
 import { BottomNav } from "./BottomNav";
+import { SiteFooter } from "./SiteFooter";
+
 
 export const AppLayout = ({
   children,
