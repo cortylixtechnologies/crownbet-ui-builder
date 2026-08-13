@@ -62,8 +62,10 @@ const App = () => (
       <AuthProvider>
         <BetslipProvider>
           <BrowserRouter>
+            <AuthGateProvider>
             <Routes>
               <Route path="/" element={<Index />} />
+
               <Route path="/menu" element={<Menu />} />
               <Route path="/games" element={<Games />} />
               <Route path="/games/aviator" element={<Aviator />} />
