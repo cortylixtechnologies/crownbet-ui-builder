@@ -1,22 +1,27 @@
 import { Flame, TrendingUp } from "lucide-react";
 import { Match } from "@/data/mockData";
 import { useBetslip } from "@/context/BetslipContext";
+import { useAuthGate } from "@/context/AuthGateContext";
 import { toast } from "sonner";
 
 export const MatchCard = ({ match }: { match: Match }) => {
   const { addSelection, selections } = useBetslip();
+  const { requireAuth } = useAuthGate();
 
   const pick = (key: "home" | "draw" | "away", label: string, odd: number) => {
-    addSelection({
-      id: `${match.id}-${key}`,
-      matchId: match.id,
-      match: `${match.home} vs ${match.away}`,
-      market: "1X2",
-      pick: label,
-      odd,
-    });
-    toast.success("Added to betslip", { description: `${match.home} vs ${match.away} — ${label} @ ${odd.toFixed(2)}` });
+    requireAuth(() => {
+      addSelection({
+        id: `${match.id}-${key}`,
+        matchId: match.id,
+        match: `${match.home} vs ${match.away}`,
+        market: "1X2",
+        pick: label,
+        odd,
+      });
+      toast.success("Added to betslip", { description: `${match.home} vs ${match.away} — ${label} @ ${odd.toFixed(2)}` });
+    }, "Sign up or log in to add this selection to your betslip.");
   };
+
 
   const isPicked = (key: string) => selections.some((s) => s.id === `${match.id}-${key}`);
 

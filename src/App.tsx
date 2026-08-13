@@ -6,6 +6,8 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { BetslipProvider } from "@/context/BetslipContext";
 import { AuthProvider } from "@/context/AuthContext";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
+import { AuthGateProvider } from "@/context/AuthGateContext";
+
 import Index from "./pages/Index";
 import Menu from "./pages/Menu";
 import Games from "./pages/Games";
@@ -116,7 +118,9 @@ const App = () => (
 
               <Route path="*" element={<NotFound />} />
             </Routes>
+            </AuthGateProvider>
           </BrowserRouter>
+
         </BetslipProvider>
       </AuthProvider>
     </TooltipProvider>
