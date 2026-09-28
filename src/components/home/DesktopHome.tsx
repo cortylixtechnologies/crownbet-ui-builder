@@ -8,6 +8,7 @@ import { useAuthGate } from "@/context/AuthGateContext";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
+import { HomeQuickSections } from "@/components/home/HomeQuickSections";
 
 const popular = [
   "Today's Football",
@@ -106,6 +107,7 @@ export const DesktopHome = ({
 }) => {
   const navigate = useNavigate();
   const { session } = useAuth();
+  const { requireAuth } = useAuthGate();
   const { selections, totalOdds, clear } = useBetslip();
   const [slide, setSlide] = useState(0);
   const [tab, setTab] = useState("Football");
@@ -149,6 +151,10 @@ export const DesktopHome = ({
               <Link
                 key={b.id}
                 to={b.to_url}
+                onClick={(event) => {
+                  event.preventDefault();
+                  requireAuth(() => navigate(b.to_url), "Sign up or log in to bet on this promotion.");
+                }}
                 className={`absolute inset-0 bg-gradient-to-br ${b.color} flex flex-col items-center justify-center text-center px-10 transition-opacity duration-700 ${
                   i === slide ? "opacity-100" : "opacity-0 pointer-events-none"
                 }`}
@@ -239,19 +245,18 @@ export const DesktopHome = ({
 
       {/* Virtual strip */}
       <div className="mx-auto max-w-[1280px] px-6 -mt-1 pt-5">
-        <Link
-          to="/virtuals"
-          className="flex items-center justify-between bg-gradient-dark rounded-lg px-8 py-5 shadow-card hover:shadow-elevated transition"
-        >
+        <div className="flex items-center justify-between gap-4 bg-gradient-dark rounded-lg px-8 py-5 shadow-card">
           <div className="text-surface-dark-foreground">
-            <div className="text-2xl font-extrabold">
+            <Link to="/virtuals" className="block text-2xl font-extrabold hover:text-primary transition-colors">
               Crown<span className="text-primary">Bet</span> VIRTUAL WORLD
-            </div>
+            </Link>
             <div className="text-sm opacity-75">Bet on every second — football, racing, keno & more</div>
           </div>
-          <span className="bg-primary text-primary-foreground font-extrabold px-6 py-2 rounded-full">BET NOW</span>
-        </Link>
+          <Button onClick={() => requireAuth(() => navigate("/virtuals"), "Sign up or log in to bet on virtual games.")} className="shrink-0 font-extrabold">BET NOW</Button>
+        </div>
       </div>
+
+      <HomeQuickSections />
 
       {/* Highlights + betslip column */}
       <div className="mx-auto max-w-[1280px] px-6 pt-5 grid grid-cols-[1fr_320px] gap-5">
@@ -323,17 +328,17 @@ export const DesktopHome = ({
               <h3 className="font-extrabold flex items-center gap-2">
                 <span className="w-2 h-2 rounded-full bg-success animate-pulse" /> Live Now
               </h3>
-              <Link to="/live" className="text-xs font-bold text-primary hover:underline">See all</Link>
+              <Button variant="link" size="sm" onClick={() => requireAuth(() => navigate("/live"), "Sign up or log in to view live matches.")} className="text-xs font-bold px-0 h-auto">See all</Button>
             </div>
             <div className="divide-y divide-surface-dark-muted">
               {live.slice(0, 6).map((m) => (
-                <Link key={m.id} to="/live" className="block px-4 py-3 hover:bg-surface-dark-muted transition-colors">
+                <Button key={m.id} variant="ghost" onClick={() => requireAuth(() => navigate("/live"), "Sign up or log in to view live matches.")} className="w-full h-auto block text-left rounded-none px-4 py-3 hover:bg-surface-dark-muted hover:text-surface-dark-foreground transition-colors">
                   <div className="text-[11px] text-surface-dark-foreground/60 truncate">{m.league} · {m.minute}</div>
                   <div className="text-sm font-semibold flex justify-between gap-2">
                     <span className="truncate">{m.home} v {m.away}</span>
                     <span className="text-success font-bold">{m.score}</span>
                   </div>
-                </Link>
+                </Button>
               ))}
               {live.length === 0 && (
                 <p className="px-4 py-6 text-sm text-surface-dark-foreground/60 text-center">No live matches right now.</p>
@@ -352,13 +357,11 @@ export const DesktopHome = ({
                 { l: "Load Code", to: "/load-code" },
                 { l: "Results", to: "/results" },
               ].map((q) => (
-                <Link
-                  key={q.l}
-                  to={q.to}
-                  className="text-sm font-bold text-center py-2.5 rounded-md bg-secondary hover:bg-success/15 hover:text-success transition"
-                >
-                  {q.l}
-                </Link>
+                {["Aviator", "Jackpot", "Lottery"].includes(q.l) ? (
+                  <Button key={q.l} variant="secondary" onClick={() => requireAuth(() => navigate(q.to), `Sign up or log in to play ${q.l}.`)} className="h-auto min-h-10 text-sm font-bold hover:bg-success/15 hover:text-success">{q.l}</Button>
+                ) : (
+                  <Link key={q.l} to={q.to} className="text-sm font-bold text-center py-2.5 rounded-md bg-secondary hover:bg-success/15 hover:text-success transition">{q.l}</Link>
+                )}
               ))}
             </div>
           </div>

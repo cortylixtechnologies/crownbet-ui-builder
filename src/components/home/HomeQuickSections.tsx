@@ -1,4 +1,4 @@
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { ArrowUpRight, Dices, Ticket, Trophy } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAuthGate } from "@/context/AuthGateContext";
@@ -11,6 +11,7 @@ const sections = [
 
 export const HomeQuickSections = () => {
   const { requireAuth } = useAuthGate();
+  const navigate = useNavigate();
 
   return (
     <section aria-label="Casino, Lottery and Jackpot" className="mx-auto max-w-[1280px] px-3 lg:px-6 py-4 lg:py-5">
@@ -27,7 +28,7 @@ export const HomeQuickSections = () => {
               </div>
               <ArrowUpRight className="w-4 h-4 shrink-0 text-muted-foreground group-hover:text-primary" />
             </Link>
-            <Button size="sm" className="self-start font-bold" onClick={() => requireAuth(() => window.location.assign(playTo), message)}>{action}</Button>
+            <Button size="sm" className="self-start font-bold" onClick={() => requireAuth(() => navigate(playTo), message)}>{action}</Button>
           </div>
         ))}
       </div>
