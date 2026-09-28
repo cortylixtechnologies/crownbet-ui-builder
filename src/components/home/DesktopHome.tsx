@@ -29,7 +29,7 @@ const OddButton = ({
   picked,
   onClick,
 }: { label: string; odd: number; picked: boolean; onClick: () => void }) => (
-  <button
+  <Button variant="secondary"
     onClick={onClick}
     className={`flex items-center justify-between px-3 h-11 rounded-md text-sm transition ${
       picked
@@ -39,7 +39,7 @@ const OddButton = ({
   >
     <span className="text-xs opacity-70">{label}</span>
     <span className="font-bold">{odd.toFixed(2)}</span>
-  </button>
+  </Button>
 );
 
 const MatchRow = ({ match }: { match: Match }) => {

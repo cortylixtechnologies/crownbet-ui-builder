@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useAuth } from "@/context/AuthContext";
 import { toast } from "sonner";
+import { useAuthGate } from "@/context/AuthGateContext";
 
 const mainNav = [
   { label: "Sports", to: "/" },
@@ -32,6 +33,7 @@ const sportsNav = [
 export const Header = ({ variant = "default" }: { variant?: "default" | "games" | "search" }) => {
   const navigate = useNavigate();
   const { session, profile, signIn, signOut } = useAuth();
+  const { requireAuth } = useAuthGate();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [busy, setBusy] = useState(false);
@@ -142,6 +144,12 @@ export const Header = ({ variant = "default" }: { variant?: "default" | "games" 
               <NavLink
                 key={n.label}
                 to={n.to}
+                onClick={(event) => {
+                  if (n.to === "/live") {
+                    event.preventDefault();
+                    requireAuth(() => navigate("/live"), "Sign up or log in to view live matches.");
+                  }
+                }}
                 end={n.to === "/"}
                 className={({ isActive }) =>
                   `px-4 py-2.5 text-[15px] font-bold rounded-t-md transition-colors ${
