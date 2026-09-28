@@ -356,13 +356,13 @@ export const DesktopHome = ({
                 { l: "Casino", to: "/games" },
                 { l: "Load Code", to: "/load-code" },
                 { l: "Results", to: "/results" },
-              ].map((q) => (
-                {["Aviator", "Jackpot", "Lottery"].includes(q.l) ? (
+              ].map((q) =>
+                ["Aviator", "Jackpot", "Lottery"].includes(q.l) ? (
                   <Button key={q.l} variant="secondary" onClick={() => requireAuth(() => navigate(q.to), `Sign up or log in to play ${q.l}.`)} className="h-auto min-h-10 text-sm font-bold hover:bg-success/15 hover:text-success">{q.l}</Button>
                 ) : (
                   <Link key={q.l} to={q.to} className="text-sm font-bold text-center py-2.5 rounded-md bg-secondary hover:bg-success/15 hover:text-success transition">{q.l}</Link>
-                )}
-              ))}
+                )
+              )}
             </div>
           </div>
         </aside>
