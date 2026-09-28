@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { AppLayout } from "@/components/layout/AppLayout";
 import { MatchCard } from "@/components/MatchCard";
 import { useMatches } from "@/hooks/useMatches";
@@ -7,6 +7,10 @@ import { usePromotions } from "@/hooks/usePromotions";
 import { slugify } from "@/data/mockData";
 import { Globe, Tv, Share2, Plane, Trophy, MoreHorizontal } from "lucide-react";
 import { DesktopHome } from "@/components/home/DesktopHome";
+import { HomeQuickSections } from "@/components/home/HomeQuickSections";
+import { useAuthGate } from "@/context/AuthGateContext";
+import { useBetslip } from "@/context/BetslipContext";
+import { Button } from "@/components/ui/button";
 
 
 const quickLinks = [
@@ -32,6 +36,9 @@ const Index = () => {
   const [leagueIdx, setLeagueIdx] = useState(0);
   const { matches } = useMatches();
   const { promos } = usePromotions();
+  const { requireAuth } = useAuthGate();
+  const { addSelection } = useBetslip();
+  const navigate = useNavigate();
   const live = matches.filter((m) => m.live);
   const featured = matches;
 
@@ -44,7 +51,7 @@ const Index = () => {
 
         <div className="flex gap-3">
           {promos.map((p) => (
-            <Link key={p.id} to={p.to_url}
+          <Link key={p.id} to={p.to_url} onClick={(event) => { event.preventDefault(); requireAuth(() => navigate(p.to_url), "Sign up or log in to bet on this promotion."); }}
               className={`relative shrink-0 w-32 h-24 rounded-xl bg-gradient-to-br ${p.color} shadow-card overflow-hidden flex items-end p-2 hover:shadow-elevated hover:-translate-y-0.5 active:scale-95 transition`}>
               <div className="absolute top-1 right-2 text-3xl">{p.emoji}</div>
               <span className="text-white text-xs font-bold leading-tight drop-shadow">{p.title}</span>
@@ -55,7 +62,12 @@ const Index = () => {
 
       <section className="bg-card px-2 py-3 grid grid-cols-6 gap-1">
         {quickLinks.map(({ label, icon: Icon, to, accent }) => (
-          <Link key={label} to={to} className="flex flex-col items-center gap-1 text-foreground rounded-lg py-1 hover:bg-secondary active:scale-95 transition">
+          <Link key={label} to={to} onClick={(event) => {
+            if (["Live", "Aviator"].includes(label)) {
+              event.preventDefault();
+              requireAuth(() => navigate(to), `Sign up or log in to ${label === "Live" ? "view live matches" : "play Aviator"}.`);
+            }
+          }} className="flex flex-col items-center gap-1 text-foreground rounded-lg py-1 hover:bg-secondary active:scale-95 transition">
             <div className={`w-10 h-10 rounded-full flex items-center justify-center ${accent ? "text-primary" : "text-foreground"}`}>
               <Icon className="w-6 h-6" />
             </div>
@@ -63,6 +75,8 @@ const Index = () => {
           </Link>
         ))}
       </section>
+
+      <HomeQuickSections />
 
       <section className="px-3 py-2 overflow-x-auto scrollbar-hide bg-card border-t border-border">
         <div className="flex gap-2">
@@ -109,10 +123,12 @@ const Index = () => {
 
       <section className="bg-surface-dark text-surface-dark-foreground mt-2 pt-4 pb-6">
         <div className="px-4 flex items-center gap-3 overflow-x-auto scrollbar-hide">
-          <Link to="/live" className="text-xl font-bold hover:text-success transition-colors">Live</Link>
+          <Button variant="ghost" onClick={() => requireAuth(() => navigate("/live"), "Sign up or log in to view live matches.")} className="text-xl font-bold hover:text-success px-0">Live</Button>
           <span className="text-white/40">|</span>
           {["Football", "vFootball", "Basketball", "Tennis", "eFootball"].map((s, i) => (
-            <Link key={s} to={s === "vFootball" ? "/virtuals" : "/live"}
+            <Link key={s} to={s === "vFootball" ? "/virtuals" : "/live"} onClick={(event) => {
+              if (s !== "vFootball") { event.preventDefault(); requireAuth(() => navigate("/live"), "Sign up or log in to view live matches."); }
+            }}
               className={`text-base font-bold whitespace-nowrap transition-colors hover:text-success ${
                 i === 0 ? "text-success" : "text-white/80"
               }`}>{s}</Link>
@@ -128,8 +144,8 @@ const Index = () => {
         </div>
         <div className="px-3 mt-3 space-y-2">
           {live.map((m) => (
-            <Link key={m.id} to="/live"
-              className="block bg-surface-dark-muted rounded-lg overflow-hidden hover:bg-white/10 active:scale-[0.99] transition">
+            <div key={m.id} className="block bg-surface-dark-muted rounded-lg overflow-hidden hover:bg-surface-dark-muted/80 transition">
+              <Link to="/live" onClick={(event) => { event.preventDefault(); requireAuth(() => navigate("/live"), "Sign up or log in to view live matches."); }} className="block hover:bg-surface-dark-muted/80 active:scale-[0.99] transition">
               <div className="flex items-center justify-between px-3 py-2 text-xs">
                 <div className="flex items-center gap-2 min-w-0">
                   {m.hot && <span className="bg-primary text-primary-foreground px-1.5 py-0.5 rounded text-[10px] font-bold">HOT 🔥</span>}
@@ -147,14 +163,15 @@ const Index = () => {
                   <div>{m.score?.split(" - ")[1]}</div>
                 </div>
               </div>
+              </Link>
               <div className="grid grid-cols-3 gap-1 p-1">
                 {[m.odds.home, m.odds.draw, m.odds.away].map((o, i) => (
-                  <div key={i} className="bg-white/5 text-success text-center py-2 rounded font-bold text-sm hover:bg-white/15 transition-colors">
+                   <Button key={i} variant="ghost" onClick={() => requireAuth(() => addSelection({ id: `${m.id}-${["home", "draw", "away"][i]}`, matchId: m.id, match: `${m.home} vs ${m.away}`, market: "1X2", pick: ["1", "X", "2"][i], odd: o }), "Sign up or log in to add this selection to your betslip.")} className="bg-surface-dark-muted text-success text-center h-10 rounded font-bold text-sm hover:bg-surface-dark-muted/80 hover:text-success transition-colors">
                     {o.toFixed(2)}
-                  </div>
+                   </Button>
                 ))}
               </div>
-            </Link>
+            </div>
           ))}
           {live.length === 0 && <div className="text-white/60 text-sm text-center py-6">No live matches right now.</div>}
         </div>

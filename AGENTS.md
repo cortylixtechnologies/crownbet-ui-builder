@@ -1,0 +1,2 @@
+# Project architecture
+- Keep public home category browsing separate from wager and game-entry calls to action; the latter use the shared auth gate so signed-out visitors can explore without placing bets.
