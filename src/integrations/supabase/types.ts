@@ -635,8 +635,10 @@ export type Database = {
           display_name: string | null
           email: string | null
           id: string
+          phone: string | null
           status: string
           updated_at: string
+          welcome_credited_at: string | null
         }
         Insert: {
           balance?: number
@@ -644,8 +646,10 @@ export type Database = {
           display_name?: string | null
           email?: string | null
           id: string
+          phone?: string | null
           status?: string
           updated_at?: string
+          welcome_credited_at?: string | null
         }
         Update: {
           balance?: number
@@ -653,8 +657,10 @@ export type Database = {
           display_name?: string | null
           email?: string | null
           id?: string
+          phone?: string | null
           status?: string
           updated_at?: string
+          welcome_credited_at?: string | null
         }
         Relationships: []
       }
@@ -875,6 +881,7 @@ export type Database = {
           value: number
         }[]
       }
+      claim_welcome_credit: { Args: never; Returns: number }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
