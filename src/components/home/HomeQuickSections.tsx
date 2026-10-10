@@ -15,20 +15,20 @@ export const HomeQuickSections = () => {
 
   return (
     <section aria-label="Casino, Lottery and Jackpot" className="mx-auto max-w-[1280px] px-3 lg:px-6 py-4 lg:py-5">
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+      <div className="grid grid-cols-3 gap-2 sm:gap-3">
         {sections.map(({ title, detail, to, playTo, action, icon: Icon, accent, message }) => (
-          <div key={title} className="bg-card border border-border rounded-md p-4 flex flex-col justify-between gap-4 hover:border-primary/50 transition-colors">
+          <div key={title} className="bg-card border border-border rounded-sm p-2 sm:p-4 flex flex-col justify-between gap-2 hover:border-success/50 transition-colors">
             <Link to={to} className="group flex items-start justify-between gap-2 min-w-0 hover:text-primary transition-colors">
-              <div className="flex items-center gap-3 min-w-0">
-                <span className="shrink-0 w-10 h-10 bg-secondary rounded-md flex items-center justify-center"><Icon className={`w-5 h-5 ${accent}`} /></span>
+              <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 min-w-0">
+                <span className="shrink-0 w-6 h-6 sm:w-10 sm:h-10 flex items-center justify-center"><Icon className={`w-5 h-5 ${accent}`} /></span>
                 <span className="min-w-0">
-                  <span className="block text-base font-extrabold text-foreground group-hover:text-primary">{title}</span>
-                  <span className="block text-xs text-muted-foreground leading-snug">{detail}</span>
+                  <span className="block text-sm sm:text-base font-extrabold text-foreground group-hover:text-success">{title}</span>
+                  <span className="hidden sm:block text-xs text-muted-foreground leading-snug">{detail}</span>
                 </span>
               </div>
-              <ArrowUpRight className="w-4 h-4 shrink-0 text-muted-foreground group-hover:text-primary" />
+              <ArrowUpRight className="w-3 h-3 shrink-0 text-muted-foreground group-hover:text-success" />
             </Link>
-            <Button size="sm" className="self-start font-bold" onClick={() => requireAuth(() => navigate(playTo), message)}>{action}</Button>
+            <Button variant="link" size="sm" className="self-start h-auto px-0 py-1 text-[10px] sm:text-xs text-success" onClick={() => requireAuth(() => navigate(playTo), message)}>{action}</Button>
           </div>
         ))}
       </div>

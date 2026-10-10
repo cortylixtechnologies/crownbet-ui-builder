@@ -11,6 +11,7 @@ import { HomeQuickSections } from "@/components/home/HomeQuickSections";
 import { useAuthGate } from "@/context/AuthGateContext";
 import { useBetslip } from "@/context/BetslipContext";
 import { Button } from "@/components/ui/button";
+import footballPromo from "@/assets/football-promo.jpg";
 
 
 const quickLinks = [
@@ -47,7 +48,16 @@ const Index = () => {
       <DesktopHome matches={featured} promos={promos as any} />
 
       <div className="lg:hidden">
-      <section className="px-4 py-3 overflow-x-auto scrollbar-hide">
+      <section className="relative overflow-hidden bg-surface-dark text-surface-dark-foreground min-h-[180px]">
+        <img src={footballPromo} alt="Football match action" width={1536} height={768} className="absolute inset-0 w-full h-full object-cover" />
+        <div className="absolute inset-0 bg-promo-shade" />
+        <div className="relative px-4 py-5 max-w-[70%]">
+          <span className="text-gold text-xs font-bold">MATCH DAY</span>
+          <h1 className="text-2xl font-extrabold mt-2">CrownBet Football</h1>
+          <Button size="sm" className="mt-3 bg-success text-success-foreground hover:bg-success/90 rounded-sm" onClick={() => requireAuth(() => navigate("/live"), "Sign up or log in to bet.")}>BET NOW</Button>
+        </div>
+      </section>
+      {promos.length > 0 && <section className="px-4 py-3 overflow-x-auto scrollbar-hide">
 
         <div className="flex gap-3">
           {promos.map((p) => (
@@ -58,7 +68,7 @@ const Index = () => {
             </Link>
           ))}
         </div>
-      </section>
+      </section>}
 
       <section className="bg-card px-2 py-3 grid grid-cols-6 gap-1">
         {quickLinks.map(({ label, icon: Icon, to, accent }) => (
