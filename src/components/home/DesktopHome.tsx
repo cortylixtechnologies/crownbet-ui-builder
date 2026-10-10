@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { ChevronRight, Printer, RefreshCw, SlidersHorizontal, Flame, Star } from "lucide-react";
+import { ChevronRight, Printer, RefreshCw, SlidersHorizontal, Flame, Star, Trophy, Ticket, Dices, Plane, ClipboardList, Trash2 } from "lucide-react";
 import { Match, slugify } from "@/data/mockData";
 import { useBetslip } from "@/context/BetslipContext";
 import { useAuth } from "@/context/AuthContext";
@@ -8,7 +8,7 @@ import { useAuthGate } from "@/context/AuthGateContext";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
-import { HomeQuickSections } from "@/components/home/HomeQuickSections";
+import footballPromo from "@/assets/football-promo.jpg";
 
 const popular = [
   "Today's Football",
@@ -31,7 +31,7 @@ const OddButton = ({
 }: { label: string; odd: number; picked: boolean; onClick: () => void }) => (
   <Button variant="secondary"
     onClick={onClick}
-    className={`flex items-center justify-between px-3 h-11 rounded-md text-sm transition ${
+    className={`flex items-center justify-between px-2 h-9 rounded-sm text-sm transition ${
       picked
         ? "bg-success text-success-foreground"
         : "bg-secondary text-foreground hover:bg-success/15 hover:text-success"
@@ -61,7 +61,7 @@ const MatchRow = ({ match }: { match: Match }) => {
     }, "Sign up or log in to add this selection to your betslip.");
 
   return (
-    <div className="grid grid-cols-[92px_1fr_320px] items-center gap-4 px-4 py-3 border-b border-border hover:bg-secondary/60 transition-colors">
+    <div className="grid grid-cols-[58px_minmax(0,1fr)_230px] items-center gap-2 px-3 py-3 border-b border-border hover:bg-secondary/60 transition-colors">
       <div className="text-xs text-muted-foreground leading-tight">
         {match.live ? (
           <span className="inline-flex items-center gap-1 text-success font-bold">
@@ -89,7 +89,7 @@ const MatchRow = ({ match }: { match: Match }) => {
           {match.live && match.score && <span className="ml-2 text-success">{match.score}</span>}
         </div>
       </div>
-      <div className="grid grid-cols-3 gap-2">
+      <div className="grid grid-cols-3 gap-1">
         <OddButton label="1" odd={match.odds.home} picked={isPicked("home")} onClick={() => pick("home", "1", match.odds.home)} />
         <OddButton label="X" odd={match.odds.draw} picked={isPicked("draw")} onClick={() => pick("draw", "X", match.odds.draw)} />
         <OddButton label="2" odd={match.odds.away} picked={isPicked("away")} onClick={() => pick("away", "2", match.odds.away)} />
@@ -98,13 +98,7 @@ const MatchRow = ({ match }: { match: Match }) => {
   );
 };
 
-export const DesktopHome = ({
-  matches,
-  promos,
-}: {
-  matches: Match[];
-  promos: { id: string; title: string; color: string; emoji: string; to_url: string }[];
-}) => {
+export const DesktopHome = ({ matches, promos }: { matches: Match[]; promos: { id: string; title: string; color: string; emoji: string; to_url: string }[] }) => {
   const navigate = useNavigate();
   const { session } = useAuth();
   const { requireAuth } = useAuthGate();
@@ -112,259 +106,73 @@ export const DesktopHome = ({
   const [slide, setSlide] = useState(0);
   const [tab, setTab] = useState("Football");
   const [email, setEmail] = useState("");
-
-  const banners = promos.length ? promos : [];
+  const [market, setMarket] = useState("1X2");
   useEffect(() => {
-    if (banners.length < 2) return;
-    const t = setInterval(() => setSlide((s) => (s + 1) % banners.length), 5000);
-    return () => clearInterval(t);
-  }, [banners.length]);
-
-  const live = matches.filter((m) => m.live);
-
+    if (promos.length < 2) return;
+    const timer = setInterval(() => setSlide(s => (s + 1) % promos.length), 6000);
+    return () => clearInterval(timer);
+  }, [promos.length]);
+  const currentPromo = promos[slide % Math.max(promos.length, 1)];
+  const filtered = matches.filter(m => tab === "Football" ? !m.sport || m.sport.toLowerCase() === "football" : m.sport?.toLowerCase() === tab.toLowerCase());
   return (
-    <div className="hidden lg:block bg-secondary pb-12">
-      {/* Hero band */}
-      <div className="bg-surface-dark">
-        <div className="mx-auto max-w-[1280px] px-6 py-6 grid grid-cols-[260px_1fr_300px] gap-5">
-          {/* Popular */}
-          <aside>
-            <h2 className="text-xl font-extrabold text-surface-dark-foreground mb-2">Popular</h2>
-            <ul>
-              {popular.map((p) => (
-                <li key={p}>
-                  <Link
-                    to={`/league/${slugify(p)}`}
-                    className="flex items-center justify-between py-2.5 text-sm font-semibold text-surface-dark-foreground/85 border-b border-surface-dark-muted hover:text-primary transition-colors"
-                  >
-                    {p}
-                    <ChevronRight className="w-4 h-4 opacity-60" />
-                  </Link>
-                </li>
-              ))}
-            </ul>
+    <div className="hidden lg:block bg-secondary pb-8">
+      <div className="bg-surface-dark border-b border-surface-dark-muted">
+        <div className="sportsbook-shell grid grid-cols-[190px_minmax(0,1fr)_260px] gap-4 py-4">
+          <aside className="text-surface-dark-foreground">
+            <h2 className="font-bold text-lg mb-2 flex items-center gap-2"><Flame className="h-4 w-4 text-primary" />Popular</h2>
+            {popular.slice(0, 7).map(p => <Link key={p} to={`/league/${slugify(p)}`} className="flex items-center justify-between text-xs py-2.5 border-b border-surface-dark-muted hover:text-success transition-colors">{p}<ChevronRight className="w-3 h-3 shrink-0" /></Link>)}
           </aside>
-
-          {/* Carousel */}
-          <div className="relative rounded-lg overflow-hidden shadow-elevated min-h-[320px]">
-            {banners.map((b, i) => (
-              <Link
-                key={b.id}
-                to={b.to_url}
-                onClick={(event) => {
-                  event.preventDefault();
-                  requireAuth(() => navigate(b.to_url), "Sign up or log in to bet on this promotion.");
-                }}
-                className={`absolute inset-0 bg-gradient-to-br ${b.color} flex flex-col items-center justify-center text-center px-10 transition-opacity duration-700 ${
-                  i === slide ? "opacity-100" : "opacity-0 pointer-events-none"
-                }`}
-              >
-                <div className="text-7xl drop-shadow">{b.emoji}</div>
-                <h3 className="mt-4 text-4xl font-extrabold text-primary-foreground drop-shadow max-w-xl leading-tight">
-                  {b.title}
-                </h3>
-                <span className="mt-6 inline-block bg-card text-foreground font-extrabold px-8 py-2.5 rounded-full">
-                  BET NOW
-                </span>
-              </Link>
-            ))}
-            {banners.length === 0 && (
-              <div className="absolute inset-0 bg-gradient-primary flex items-center justify-center text-primary-foreground text-2xl font-extrabold">
-                Welcome to CrownBet
-              </div>
-            )}
-            <div className="absolute bottom-3 left-0 right-0 flex justify-center gap-2">
-              {banners.map((b, i) => (
-                <button
-                  key={b.id}
-                  aria-label={`Slide ${i + 1}`}
-                  onClick={() => setSlide(i)}
-                  className={`w-2.5 h-2.5 rounded-full transition ${i === slide ? "bg-card" : "bg-card/40"}`}
-                />
-              ))}
+          <section className="relative overflow-hidden min-h-[270px] text-surface-dark-foreground">
+            <img src={footballPromo} width={1536} height={768} alt="Football players competing for the ball" className="absolute inset-0 w-full h-full object-cover" />
+            <div className="absolute inset-0 bg-promo-shade" />
+            <div className="relative px-6 py-7 max-w-[65%]">
+              <span className="text-xs font-bold uppercase text-gold">CrownBet · Match day</span>
+              <h1 className="text-3xl font-extrabold leading-tight mt-3">{currentPromo?.title || "CrownBet Football"}</h1>
+              <Button className="mt-5 bg-success text-success-foreground hover:bg-success/90 rounded-sm font-bold px-7" onClick={() => requireAuth(() => navigate(currentPromo?.to_url || "/live"), "Sign up or log in to bet on this promotion.")}>BET NOW<ChevronRight className="w-4 h-4" /></Button>
             </div>
-          </div>
-
-          {/* Register / betslip teaser */}
-          <div>
-            {session ? (
-              <div className="bg-card rounded-lg p-4 shadow-card">
-                <h3 className="font-extrabold text-foreground">Betslip ({selections.length})</h3>
-                {selections.length === 0 ? (
-                  <p className="text-sm text-muted-foreground mt-2">
-                    Click on any odds to add a selection to your betslip.
-                  </p>
-                ) : (
-                  <>
-                    <ul className="mt-2 space-y-2 max-h-52 overflow-y-auto">
-                      {selections.map((s) => (
-                        <li key={s.id} className="text-xs border-b border-border pb-2">
-                          <div className="font-bold text-foreground truncate">{s.match}</div>
-                          <div className="text-muted-foreground">
-                            {s.pick} @ <span className="font-bold text-success">{s.odd.toFixed(2)}</span>
-                          </div>
-                        </li>
-                      ))}
-                    </ul>
-                    <div className="flex justify-between text-sm mt-3">
-                      <span className="text-muted-foreground">Total odds</span>
-                      <span className="font-bold">{totalOdds.toFixed(2)}</span>
-                    </div>
-                    <Button onClick={() => navigate("/betslip")} className="w-full mt-3 bg-gradient-primary text-primary-foreground font-bold h-11">
-                      Go to betslip
-                    </Button>
-                    <button onClick={clear} className="w-full mt-2 text-xs text-muted-foreground hover:text-destructive">
-                      Clear selections
-                    </button>
-                  </>
-                )}
-              </div>
-            ) : (
-              <div className="text-surface-dark-foreground">
-                <h3 className="text-2xl font-extrabold mb-3">Instant Registration</h3>
-                <Input
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  placeholder="Email address"
-                  className="h-12 bg-card text-foreground border-0"
-                />
-                <Button
-                  onClick={() => navigate("/register", { state: { email } })}
-                  className="w-full mt-3 h-12 bg-success text-success-foreground hover:bg-success/90 font-extrabold text-base"
-                >
-                  Register
-                </Button>
-                <p className="text-xs text-surface-dark-foreground/60 mt-3">
-                  18+ only. Bet responsibly. New players get a welcome bonus on first deposit.
-                </p>
-              </div>
-            )}
-          </div>
+            <div className="absolute bottom-3 left-6 flex gap-1.5">{promos.map((p, i) => <Button key={p.id} variant="ghost" size="icon" aria-label={`Promotion ${i + 1}`} onClick={() => setSlide(i)} className={`h-1.5 w-6 rounded-none hover:bg-success ${slide === i ? "bg-success" : "bg-surface-dark-foreground/40"}`} />)}</div>
+          </section>
+          <aside className="text-surface-dark-foreground py-3">
+            <h2 className="text-xl font-bold mb-4">{session ? "Your CrownBet" : "Instant Registration"}</h2>
+            {session ? <Button className="w-full bg-success text-success-foreground hover:bg-success/90 rounded-sm" onClick={() => navigate("/me")}>My account</Button> : <><Input aria-label="Registration email" value={email} onChange={e => setEmail(e.target.value)} placeholder="Email address" type="email" className="bg-card text-foreground h-11 rounded-sm border-0" /><Button onClick={() => navigate("/register", { state: { email } })} className="w-full mt-3 h-11 bg-success text-success-foreground hover:bg-success/90 rounded-sm font-bold">Register</Button><p className="text-xs text-surface-dark-foreground/60 mt-3 leading-relaxed">18+ only. Terms and conditions apply. Please play responsibly.</p><Link to="/login" className="inline-block mt-3 text-xs hover:text-success">Already a member? Log in</Link></>}
+          </aside>
         </div>
       </div>
-
-      {/* Virtual strip */}
-      <div className="mx-auto max-w-[1280px] px-6 -mt-1 pt-5">
-        <div className="flex items-center justify-between gap-4 bg-gradient-dark rounded-lg px-8 py-5 shadow-card">
-          <div className="text-surface-dark-foreground">
-            <Link to="/virtuals" className="block text-2xl font-extrabold hover:text-primary transition-colors">
-              Crown<span className="text-primary">Bet</span> VIRTUAL WORLD
-            </Link>
-            <div className="text-sm opacity-75">Bet on every second — football, racing, keno & more</div>
+      <div className="sportsbook-shell grid grid-cols-[190px_minmax(0,1fr)_260px] gap-4 pt-4 items-start">
+        <aside className="bg-card border border-border">
+          <Link to="/menu" className="flex justify-between items-center p-3 font-bold text-sm border-b border-border hover:text-success">All Sports<ChevronRight className="h-4 w-4" /></Link>
+          {["Football", "Basketball", "Tennis", "Table Tennis", "Ice Hockey", "Baseball", "American Football", "Cricket", "Volleyball", "Esports"].map((s, i) => <Link key={s} to={`/league/${slugify(s)}`} className="flex items-center gap-2.5 px-3 py-3 text-xs border-b border-border hover:bg-secondary hover:text-success"><Trophy className={`h-4 w-4 ${i === 0 ? "text-success" : "text-muted-foreground"}`} />{s}<ChevronRight className="h-3 w-3 ml-auto text-muted-foreground" /></Link>)}
+          <Link to="/virtuals" className="flex gap-2 p-3 font-bold text-sm text-success hover:bg-secondary"><Plane className="h-4 w-4" />Virtuals</Link>
+        </aside>
+        <div className="min-w-0">
+          <div className="bg-surface-dark text-surface-dark-foreground flex justify-between items-center px-4 py-3 mb-3">
+            <Link to="/virtuals" className="flex items-center gap-3 hover:text-success"><Plane className="h-7 w-7 text-success" /><span className="font-extrabold text-lg">VIRTUAL WORLD<span className="block text-xs font-normal text-surface-dark-foreground/65">Aviator · Mines · Dice · Coin Flip</span></span></Link>
+            <Button size="sm" className="rounded-sm bg-success text-success-foreground hover:bg-success/90" onClick={() => requireAuth(() => navigate("/virtuals"), "Sign up or log in to bet on virtual games.")}>PLAY NOW</Button>
           </div>
-          <Button onClick={() => requireAuth(() => navigate("/virtuals"), "Sign up or log in to bet on virtual games.")} className="shrink-0 font-extrabold">BET NOW</Button>
+          <section className="bg-card border border-border">
+            <div className="flex justify-between items-center px-3 pt-3"><h2 className="text-xl font-bold text-success">Highlights</h2><div className="flex gap-1"><Button variant="ghost" size="icon" title="Print fixtures" aria-label="Print fixtures" onClick={() => window.print()} className="w-8 h-8"><Printer className="w-4 h-4" /></Button><Button variant="ghost" size="icon" title="Refresh fixtures" aria-label="Refresh fixtures" onClick={() => window.location.reload()} className="w-8 h-8"><RefreshCw className="w-4 h-4" /></Button><Button variant="ghost" size="icon" title="Filter sports" aria-label="Filter sports" onClick={() => navigate("/menu")} className="w-8 h-8"><SlidersHorizontal className="w-4 h-4" /></Button></div></div>
+            <div className="flex overflow-x-auto scrollbar-hide px-3 border-b border-border gap-4">{highlightTabs.map(t => <Button key={t} variant="ghost" onClick={() => t === "vFootball" ? navigate("/virtuals") : t === "More Sports" ? navigate("/menu") : setTab(t)} className={`rounded-none px-0 text-xs h-11 border-b-2 hover:bg-transparent hover:text-success ${tab === t ? "border-success text-success" : "border-transparent text-muted-foreground"}`}>{t}</Button>)}</div>
+            <div className="flex gap-2 px-3 py-3 overflow-auto scrollbar-hide">{["Today's Football", "Premier League", "Champions League"].map(l => <Link key={l} to={`/league/${slugify(l)}`} className="shrink-0 text-xs px-2 py-2 border border-border hover:border-success hover:text-success">{l}</Link>)}</div>
+            <div className="grid grid-cols-[58px_minmax(0,1fr)_230px] gap-2 px-3 py-2 bg-secondary text-xs text-muted-foreground"><span>Time</span><span>Teams</span><div className="text-center">1X2</div></div>
+            {filtered.map(m => <MatchRow key={m.id} match={m} />)}
+            {filtered.length === 0 && <p className="text-sm text-muted-foreground text-center py-12">No fixtures published for {tab.toLowerCase()}.</p>}
+          </section>
+          <section className="bg-surface-dark text-surface-dark-foreground mt-3">
+            <div className="flex justify-between items-center px-3 py-3"><h2 className="font-bold text-xl">Live Betting</h2><Button variant="link" size="sm" className="text-success" onClick={() => requireAuth(() => navigate("/live"), "Sign up or log in to view live matches.")}>See all<ChevronRight className="w-3 h-3" /></Button></div>
+            <div className="flex gap-4 px-3 border-b border-surface-dark-muted">{["1X2", "Over/Under", "Double Chance"].map(m => <Button key={m} variant="ghost" onClick={() => {setMarket(m); requireAuth(() => navigate("/live"), "Sign up or log in to view live matches.");}} className={`px-0 rounded-none hover:bg-transparent hover:text-success text-xs ${market === m ? "text-success border-b-2 border-success" : "text-surface-dark-foreground/60"}`}>{m}</Button>)}</div>
+            {matches.filter(m => m.live).slice(0, 3).map(m => <Button key={m.id} variant="ghost" className="w-full h-auto px-3 py-3 justify-between rounded-none text-surface-dark-foreground hover:bg-surface-dark-muted hover:text-surface-dark-foreground" onClick={() => requireAuth(() => navigate("/live"), "Sign up or log in to view live matches.")}><span className="text-xs truncate">{m.home} vs {m.away}</span><span className="text-success">{m.score}</span></Button>)}
+            {!matches.some(m => m.live) && <p className="text-xs text-surface-dark-foreground/60 px-3 py-6">No live matches right now.</p>}
+          </section>
+          <div className="grid grid-cols-3 gap-2 mt-3">{[{title:"Casino",to:"/games",play:"/games/roulette",icon:Dices,action:"Play roulette"},{title:"Lottery",to:"/lottery",play:"/lottery",icon:Ticket,action:"Get a ticket"},{title:"Jackpot",to:"/jackpot",play:"/jackpot",icon:Trophy,action:"Enter jackpot"}].map(q => <div key={q.title} className="bg-card border border-border p-3 rounded-sm"><Link to={q.to} className="flex items-center gap-2 font-bold text-sm hover:text-success"><q.icon className="w-4 h-4 text-success" />{q.title}</Link><Button variant="link" className="px-0 text-xs mt-1 text-muted-foreground hover:text-success" onClick={() => requireAuth(() => navigate(q.play), `Sign up or log in to play ${q.title}.`)}>{q.action}<ChevronRight className="w-3 h-3" /></Button></div>)}</div>
         </div>
-      </div>
-
-      <HomeQuickSections />
-
-      {/* Highlights + betslip column */}
-      <div className="mx-auto max-w-[1280px] px-6 pt-5 grid grid-cols-[1fr_320px] gap-5">
-        <div className="bg-card rounded-lg shadow-card overflow-hidden">
-          <div className="flex items-center justify-between px-4 py-3">
-            <h2 className="flex items-center gap-2 text-xl font-extrabold text-foreground">
-              <span className="w-3.5 h-3.5 rounded-full bg-success" /> Highlights
-            </h2>
-            <div className="flex items-center gap-4 text-sm text-muted-foreground">
-              <button className="flex items-center gap-1 hover:text-foreground transition-colors" onClick={() => window.print()}>
-                <Printer className="w-4 h-4" /> Print
-              </button>
-              <button className="flex items-center gap-1 hover:text-foreground transition-colors" onClick={() => window.location.reload()}>
-                <RefreshCw className="w-4 h-4" /> Refresh
-              </button>
-              <Link to="/menu" className="flex items-center gap-1 hover:text-foreground transition-colors">
-                Filter <SlidersHorizontal className="w-4 h-4" />
-              </Link>
-            </div>
-          </div>
-
-          <div className="flex items-center gap-6 px-4 border-b border-border">
-            {highlightTabs.map((t) => (
-              <button
-                key={t}
-                onClick={() => setTab(t)}
-                className={`py-2.5 text-sm font-bold border-b-2 transition-colors ${
-                  tab === t ? "border-primary text-foreground" : "border-transparent text-muted-foreground hover:text-foreground"
-                }`}
-              >
-                {t}
-              </button>
-            ))}
-          </div>
-
-          <div className="flex gap-3 px-4 py-3 overflow-x-auto scrollbar-hide">
-            {["UEFA Champions League", "Europa League", "Premier League", "La Liga", "Serie A"].map((l, i) => (
-              <Link
-                key={l}
-                to={`/league/${slugify(l)}`}
-                className={`shrink-0 min-w-[150px] rounded-md border px-3 py-2.5 text-sm transition ${
-                  i === 0 ? "border-success bg-success/5" : "border-border hover:border-success"
-                }`}
-              >
-                <div className="text-xs text-muted-foreground">Europe</div>
-                <div className="font-bold text-foreground truncate">{l}</div>
-              </Link>
-            ))}
-          </div>
-
-          <div className="grid grid-cols-[92px_1fr_320px] gap-4 px-4 py-2 bg-secondary text-[11px] font-bold text-muted-foreground uppercase">
-            <span>Time</span>
-            <span>Match</span>
-            <div className="grid grid-cols-3 gap-2 text-center">
-              <span>1</span><span>X</span><span>2</span>
-            </div>
-          </div>
-
-          {matches.map((m) => <MatchRow key={m.id} match={m} />)}
-          {matches.length === 0 && (
-            <p className="text-center text-muted-foreground py-12 text-sm">No fixtures published yet.</p>
-          )}
-        </div>
-
-        {/* Right rail */}
-        <aside className="space-y-4">
-          <div className="bg-surface-dark text-surface-dark-foreground rounded-lg overflow-hidden">
-            <div className="px-4 py-3 flex items-center justify-between border-b border-surface-dark-muted">
-              <h3 className="font-extrabold flex items-center gap-2">
-                <span className="w-2 h-2 rounded-full bg-success animate-pulse" /> Live Now
-              </h3>
-              <Button variant="link" size="sm" onClick={() => requireAuth(() => navigate("/live"), "Sign up or log in to view live matches.")} className="text-xs font-bold px-0 h-auto">See all</Button>
-            </div>
-            <div className="divide-y divide-surface-dark-muted">
-              {live.slice(0, 6).map((m) => (
-                <Button key={m.id} variant="ghost" onClick={() => requireAuth(() => navigate("/live"), "Sign up or log in to view live matches.")} className="w-full h-auto block text-left rounded-none px-4 py-3 hover:bg-surface-dark-muted hover:text-surface-dark-foreground transition-colors">
-                  <div className="text-[11px] text-surface-dark-foreground/60 truncate">{m.league} · {m.minute}</div>
-                  <div className="text-sm font-semibold flex justify-between gap-2">
-                    <span className="truncate">{m.home} v {m.away}</span>
-                    <span className="text-success font-bold">{m.score}</span>
-                  </div>
-                </Button>
-              ))}
-              {live.length === 0 && (
-                <p className="px-4 py-6 text-sm text-surface-dark-foreground/60 text-center">No live matches right now.</p>
-              )}
-            </div>
-          </div>
-
-          <div className="bg-card rounded-lg shadow-card p-4">
-            <h3 className="font-extrabold text-foreground">Quick links</h3>
-            <div className="mt-3 grid grid-cols-2 gap-2">
-              {[
-                { l: "Aviator", to: "/games/aviator" },
-                { l: "Jackpot", to: "/jackpot" },
-                { l: "Lottery", to: "/lottery" },
-                { l: "Casino", to: "/games" },
-                { l: "Load Code", to: "/load-code" },
-                { l: "Results", to: "/results" },
-              ].map((q) =>
-                ["Aviator", "Jackpot", "Lottery"].includes(q.l) ? (
-                  <Button key={q.l} variant="secondary" onClick={() => requireAuth(() => navigate(q.to), `Sign up or log in to play ${q.l}.`)} className="h-auto min-h-10 text-sm font-bold hover:bg-success/15 hover:text-success">{q.l}</Button>
-                ) : (
-                  <Link key={q.l} to={q.to} className="text-sm font-bold text-center py-2.5 rounded-md bg-secondary hover:bg-success/15 hover:text-success transition">{q.l}</Link>
-                )
-              )}
-            </div>
-          </div>
+        <aside className="space-y-3">
+          <section className="bg-card border border-border">
+            <div className="bg-success text-success-foreground px-3 py-3 flex justify-between font-bold"><span>Betslip</span><span>{selections.length}</span></div>
+            <div className="flex border-b border-border text-xs"><Link to="/betslip" className="flex-1 text-center py-3 border-b-2 border-success font-bold hover:text-success">Betslip</Link><Link to="/load-code" className="flex-1 text-center py-3 text-muted-foreground hover:text-success">Load Booking Code</Link></div>
+            {selections.length === 0 ? <div className="px-4 py-10 text-center"><ClipboardList className="w-10 h-10 mx-auto text-muted-foreground/40 mb-3" /><p className="text-sm font-bold">Your betslip is empty</p><p className="text-xs mt-2 text-muted-foreground">No selections added.</p></div> : <div className="p-3">{selections.map(s => <div key={s.id} className="border-b border-border py-3 text-xs"><div className="font-bold">{s.match}</div><div className="mt-1 text-muted-foreground">{s.pick}<span className="float-right text-success font-bold">{s.odd.toFixed(2)}</span></div></div>)}<div className="flex justify-between my-3 text-sm"><span>Total odds</span><strong>{totalOdds.toFixed(2)}</strong></div><Button className="w-full rounded-sm bg-success text-success-foreground hover:bg-success/90" onClick={() => navigate("/betslip")}>Go to betslip</Button><Button variant="ghost" size="sm" className="w-full text-muted-foreground mt-1" onClick={clear}><Trash2 className="w-3 h-3" />Clear selections</Button></div>}
+          </section>
+          <Link to="/promotions" className="block border border-border bg-card p-4 hover:border-success"><span className="text-success text-xs font-bold">CROWNBET</span><span className="block font-extrabold text-xl mt-2">More ways to win.</span><span className="flex items-center text-xs text-muted-foreground mt-3">View promotions<ChevronRight className="h-3 w-3 ml-auto" /></span></Link>
+          <div className="text-xs text-muted-foreground leading-relaxed border-t border-border pt-3"><span className="font-bold text-foreground">18+ · Play responsibly</span><p className="mt-1">Gambling can be addictive.</p></div>
         </aside>
       </div>
     </div>
