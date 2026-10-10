@@ -113,11 +113,11 @@ export const DesktopHome = ({ matches, promos }: { matches: Match[]; promos: { i
     return () => clearInterval(timer);
   }, [promos.length]);
   const currentPromo = promos[slide % Math.max(promos.length, 1)];
-  const filtered = matches.filter(m => tab === "Football" ? !m.sport || m.sport.toLowerCase() === "football" : m.sport?.toLowerCase() === tab.toLowerCase());
+  const filtered = tab === "Football" ? matches : matches.filter(m => m.league.toLowerCase().includes(tab.toLowerCase()));
   return (
     <div className="hidden lg:block bg-secondary pb-8">
       <div className="bg-surface-dark border-b border-surface-dark-muted">
-        <div className="sportsbook-shell grid grid-cols-[190px_minmax(0,1fr)_260px] gap-4 py-4">
+        <div className="sportsbook-shell grid grid-cols-[220px_minmax(0,1fr)_220px] gap-5 py-2">
           <aside className="text-surface-dark-foreground">
             <h2 className="font-bold text-lg mb-2 flex items-center gap-2"><Flame className="h-4 w-4 text-primary" />Popular</h2>
             {popular.slice(0, 7).map(p => <Link key={p} to={`/league/${slugify(p)}`} className="flex items-center justify-between text-xs py-2.5 border-b border-surface-dark-muted hover:text-success transition-colors">{p}<ChevronRight className="w-3 h-3 shrink-0" /></Link>)}
@@ -138,19 +138,14 @@ export const DesktopHome = ({ matches, promos }: { matches: Match[]; promos: { i
           </aside>
         </div>
       </div>
-      <div className="sportsbook-shell grid grid-cols-[190px_minmax(0,1fr)_260px] gap-4 pt-4 items-start">
-        <aside className="bg-card border border-border">
-          <Link to="/menu" className="flex justify-between items-center p-3 font-bold text-sm border-b border-border hover:text-success">All Sports<ChevronRight className="h-4 w-4" /></Link>
-          {["Football", "Basketball", "Tennis", "Table Tennis", "Ice Hockey", "Baseball", "American Football", "Cricket", "Volleyball", "Esports"].map((s, i) => <Link key={s} to={`/league/${slugify(s)}`} className="flex items-center gap-2.5 px-3 py-3 text-xs border-b border-border hover:bg-secondary hover:text-success"><Trophy className={`h-4 w-4 ${i === 0 ? "text-success" : "text-muted-foreground"}`} />{s}<ChevronRight className="h-3 w-3 ml-auto text-muted-foreground" /></Link>)}
-          <Link to="/virtuals" className="flex gap-2 p-3 font-bold text-sm text-success hover:bg-secondary"><Plane className="h-4 w-4" />Virtuals</Link>
-        </aside>
+      <div className="sportsbook-shell grid grid-cols-[minmax(0,1fr)_260px] gap-4 pt-3 items-start">
         <div className="min-w-0">
           <div className="bg-surface-dark text-surface-dark-foreground flex justify-between items-center px-4 py-3 mb-3">
             <Link to="/virtuals" className="flex items-center gap-3 hover:text-success"><Plane className="h-7 w-7 text-success" /><span className="font-extrabold text-lg">VIRTUAL WORLD<span className="block text-xs font-normal text-surface-dark-foreground/65">Aviator · Mines · Dice · Coin Flip</span></span></Link>
             <Button size="sm" className="rounded-sm bg-success text-success-foreground hover:bg-success/90" onClick={() => requireAuth(() => navigate("/virtuals"), "Sign up or log in to bet on virtual games.")}>PLAY NOW</Button>
           </div>
           <section className="bg-card border border-border">
-            <div className="flex justify-between items-center px-3 pt-3"><h2 className="text-xl font-bold text-success">Highlights</h2><div className="flex gap-1"><Button variant="ghost" size="icon" title="Print fixtures" aria-label="Print fixtures" onClick={() => window.print()} className="w-8 h-8"><Printer className="w-4 h-4" /></Button><Button variant="ghost" size="icon" title="Refresh fixtures" aria-label="Refresh fixtures" onClick={() => window.location.reload()} className="w-8 h-8"><RefreshCw className="w-4 h-4" /></Button><Button variant="ghost" size="icon" title="Filter sports" aria-label="Filter sports" onClick={() => navigate("/menu")} className="w-8 h-8"><SlidersHorizontal className="w-4 h-4" /></Button></div></div>
+            <div className="flex justify-between items-center px-3 pt-3"><h2 className="text-xl font-bold text-foreground"><span className="inline-block w-4 h-4 mr-2 rounded-full bg-success" />Highlights</h2><div className="flex gap-1"><Button variant="ghost" size="icon" title="Print fixtures" aria-label="Print fixtures" onClick={() => window.print()} className="w-8 h-8"><Printer className="w-4 h-4" /></Button><Button variant="ghost" size="icon" title="Refresh fixtures" aria-label="Refresh fixtures" onClick={() => window.location.reload()} className="w-8 h-8"><RefreshCw className="w-4 h-4" /></Button><Button variant="ghost" size="icon" title="Filter sports" aria-label="Filter sports" onClick={() => navigate("/menu")} className="w-8 h-8"><SlidersHorizontal className="w-4 h-4" /></Button></div></div>
             <div className="flex overflow-x-auto scrollbar-hide px-3 border-b border-border gap-4">{highlightTabs.map(t => <Button key={t} variant="ghost" onClick={() => t === "vFootball" ? navigate("/virtuals") : t === "More Sports" ? navigate("/menu") : setTab(t)} className={`rounded-none px-0 text-xs h-11 border-b-2 hover:bg-transparent hover:text-success ${tab === t ? "border-success text-success" : "border-transparent text-muted-foreground"}`}>{t}</Button>)}</div>
             <div className="flex gap-2 px-3 py-3 overflow-auto scrollbar-hide">{["Today's Football", "Premier League", "Champions League"].map(l => <Link key={l} to={`/league/${slugify(l)}`} className="shrink-0 text-xs px-2 py-2 border border-border hover:border-success hover:text-success">{l}</Link>)}</div>
             <div className="grid grid-cols-[58px_minmax(0,1fr)_230px] gap-2 px-3 py-2 bg-secondary text-xs text-muted-foreground"><span>Time</span><span>Teams</span><div className="text-center">1X2</div></div>

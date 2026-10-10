@@ -48,11 +48,11 @@ export const Header = ({ variant = "default" }: { variant?: "default" | "games" 
   };
 
   return (
-    <header className="sticky top-0 z-40 shadow-elevated">
+    <header className="relative z-40">
       {/* ---------- Mobile bar ---------- */}
-      <div className="lg:hidden bg-gradient-primary text-primary-foreground">
+      <div className="lg:hidden bg-primary text-primary-foreground">
         <div className="flex items-center justify-between px-4 py-3 gap-3">
-          <Link to="/" className="flex items-center gap-1.5 font-extrabold text-xl tracking-tight">
+          <Link to="/" className="flex items-center gap-1.5 font-extrabold text-xl">
             <Crown className="w-6 h-6 text-gold fill-gold" />
             <span>Crown<span className="text-gold">Bet</span></span>
             {variant === "games" && (
@@ -61,9 +61,9 @@ export const Header = ({ variant = "default" }: { variant?: "default" | "games" 
           </Link>
           <div className="flex items-center gap-2">
             {variant !== "search" && (
-              <button onClick={() => navigate("/search")} className="p-2 rounded-full hover:bg-primary-foreground/10 transition" aria-label="Search">
+              <Button variant="ghost" size="icon" onClick={() => navigate("/search")} className="p-2 rounded-full hover:bg-primary-foreground/10 transition" aria-label="Search">
                 <Search className="w-5 h-5" />
-              </button>
+              </Button>
             )}
             {session ? (
               <Link to="/me" className="flex items-center gap-1.5 bg-primary-foreground/15 rounded-full px-3 h-9 text-sm font-bold">
@@ -73,7 +73,7 @@ export const Header = ({ variant = "default" }: { variant?: "default" | "games" 
             ) : (
               <>
                 <Button variant="secondary" size="sm" className="bg-card text-primary hover:bg-card/90 font-bold h-9" onClick={() => navigate("/register")}>
-                  Join Now
+                  Register
                 </Button>
                 <Button variant="outline" size="sm" className="border-primary-foreground text-primary-foreground bg-transparent hover:bg-card hover:text-primary font-bold h-9" onClick={() => navigate("/login")}>
                   Log in
@@ -85,10 +85,10 @@ export const Header = ({ variant = "default" }: { variant?: "default" | "games" 
       </div>
 
       {/* ---------- Desktop bar ---------- */}
-      <div className="hidden lg:block bg-gradient-primary text-primary-foreground">
-        <div className="mx-auto max-w-[1280px] px-6 pt-3">
+      <div className="hidden lg:block bg-primary text-primary-foreground">
+        <div className="sportsbook-shell pt-3">
           <div className="flex items-start justify-between gap-6">
-            <Link to="/" className="flex items-center gap-2 font-extrabold text-3xl tracking-tight">
+            <Link to="/" className="flex items-center gap-2 font-extrabold text-3xl">
               <Crown className="w-8 h-8 text-gold fill-gold" />
               <span>Crown<span className="text-gold">Bet</span></span>
               <span className="ml-2 flex items-center gap-1 text-sm font-semibold opacity-90">
@@ -105,9 +105,9 @@ export const Header = ({ variant = "default" }: { variant?: "default" | "games" 
                 <Button variant="secondary" className="bg-card text-primary hover:bg-card/90 font-bold h-10" onClick={() => navigate("/open-bets")}>
                   My Bets
                 </Button>
-                <button onClick={() => signOut()} className="p-2 rounded hover:bg-primary-foreground/15 transition" aria-label="Log out">
+                <Button variant="ghost" size="icon" onClick={() => signOut()} className="p-2 rounded hover:bg-primary-foreground/15 transition" aria-label="Log out">
                   <LogOut className="w-5 h-5" />
-                </button>
+                </Button>
               </div>
             ) : (
               <div className="text-right">
@@ -115,17 +115,17 @@ export const Header = ({ variant = "default" }: { variant?: "default" | "games" 
                   <Input
                     value={email} onChange={(e) => setEmail(e.target.value)} type="email" required
                     placeholder="Email address"
-                    className="w-56 h-10 bg-card text-foreground border-0 rounded-md"
+                    className="w-44 h-8 bg-primary-dark text-primary-foreground placeholder:text-primary-foreground/60 border-0 rounded-sm text-xs"
                   />
                   <Input
                     value={password} onChange={(e) => setPassword(e.target.value)} type="password" required
                     placeholder="Password"
-                    className="w-44 h-10 bg-card text-foreground border-0 rounded-md"
+                    className="w-36 h-8 bg-primary-dark text-primary-foreground placeholder:text-primary-foreground/60 border-0 rounded-sm text-xs"
                   />
-                  <Button type="submit" disabled={busy} variant="secondary" className="h-10 px-6 bg-surface-dark text-surface-dark-foreground hover:bg-surface-dark-muted font-bold">
+                  <Button type="submit" disabled={busy} variant="secondary" className="h-8 px-5 rounded-sm text-xs bg-primary-dark text-surface-dark-foreground hover:bg-surface-dark-muted font-bold">
                     {busy ? "…" : "Login"}
                   </Button>
-                  <Button type="button" onClick={() => navigate("/register")} className="h-10 px-6 bg-card text-primary hover:bg-card/90 font-bold border border-primary-foreground/40">
+                  <Button type="button" onClick={() => navigate("/register")} className="h-8 px-5 rounded-sm text-xs bg-transparent text-primary-foreground hover:bg-primary-dark font-bold border border-primary-foreground/70">
                     Register
                   </Button>
                 </form>
@@ -152,7 +152,7 @@ export const Header = ({ variant = "default" }: { variant?: "default" | "games" 
                 }}
                 end={n.to === "/"}
                 className={({ isActive }) =>
-                  `px-4 py-2.5 text-[15px] font-bold rounded-t-md transition-colors ${
+                  `px-3 py-2.5 text-xs font-bold rounded-none transition-colors ${
                     isActive ? "bg-card text-primary" : "text-primary-foreground/90 hover:bg-primary-foreground/10"
                   }`
                 }
@@ -160,23 +160,23 @@ export const Header = ({ variant = "default" }: { variant?: "default" | "games" 
                 {n.label}
               </NavLink>
             ))}
-            <button onClick={() => navigate("/search")} className="ml-auto mb-1 p-2 rounded-full hover:bg-primary-foreground/10 transition" aria-label="Search">
+            <Button variant="ghost" size="icon" onClick={() => navigate("/search")} className="ml-auto mb-1 p-2 rounded-full hover:bg-primary-foreground/10 transition" aria-label="Search">
               <Search className="w-5 h-5" />
-            </button>
+            </Button>
           </nav>
         </div>
       </div>
 
       {/* sports sub nav (desktop) */}
-      <div className="hidden lg:block bg-card border-b border-border">
-        <div className="mx-auto max-w-[1280px] px-6 flex items-center gap-6 overflow-x-auto scrollbar-hide">
+      <div className="bg-card border-b border-border">
+        <div className="sportsbook-shell flex items-center gap-6 overflow-x-auto scrollbar-hide">
           {sportsNav.map((s, i) => (
             <NavLink
               key={s.label}
               to={s.to}
               end={s.to === "/"}
               className={({ isActive }) =>
-                `py-3 text-sm font-bold whitespace-nowrap border-b-2 transition-colors ${
+                `py-2.5 text-xs font-bold whitespace-nowrap border-b-2 transition-colors ${
                   isActive && i === 0
                     ? "border-primary text-foreground"
                     : "border-transparent text-muted-foreground hover:text-foreground"
@@ -186,7 +186,7 @@ export const Header = ({ variant = "default" }: { variant?: "default" | "games" 
               {s.label}
             </NavLink>
           ))}
-          <Link to="/menu" className="py-3 text-sm font-bold text-muted-foreground hover:text-foreground flex items-center gap-1">
+          <Link to="/menu" className="py-2.5 text-xs font-bold text-muted-foreground hover:text-foreground flex items-center gap-1">
             More Sports <ChevronDown className="w-4 h-4" />
           </Link>
         </div>
