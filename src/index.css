@@ -40,6 +40,24 @@
     --surface-dark-foreground: 0 0% 98%;
     --surface-dark-muted: 210 10% 23%;
 
+    /* Aviator's dedicated game-room palette. */
+    --aviator-room: hsl(200 25% 6%);
+    --aviator-panel: hsl(0 0% 11%);
+    --aviator-canvas: hsl(0 0% 2%);
+    --aviator-row: hsl(0 0% 7%);
+    --aviator-control: hsl(210 3% 17%);
+    --aviator-text: hsl(0 0% 96%);
+    --aviator-muted: hsl(210 5% 58%);
+    --aviator-border: hsl(210 5% 19%);
+    --aviator-red: hsl(344 100% 48%);
+    --aviator-green: hsl(107 100% 34%);
+    --aviator-green-border: hsl(103 72% 61%);
+    --aviator-blue: hsl(196 92% 57%);
+    --aviator-violet: hsl(280 85% 63%);
+    --aviator-blue-glow: radial-gradient(ellipse at 55% 48%, hsl(197 85% 29% / 0.75), transparent 62%);
+    --aviator-violet-glow: radial-gradient(ellipse at 55% 48%, hsl(276 75% 29% / 0.75), transparent 62%);
+    --aviator-rays: repeating-conic-gradient(from -88deg at 0% 100%, transparent 0deg 10deg, hsl(0 0% 100% / 0.035) 10deg 20deg);
+
     --border: 0 0% 88%;
     --input: 214 20% 90%;
     --ring: 354 78% 48%;
@@ -52,6 +70,74 @@
     --gradient-dark: linear-gradient(180deg, hsl(220 20% 14%), hsl(220 22% 8%));
     --shadow-card: 0 2px 8px -2px hsl(220 20% 12% / 0.08);
     --shadow-elevated: 0 8px 24px -8px hsl(354 78% 48% / 0.35);
+  }
+}
+
+@layer components {
+  .aviator-room { background: var(--aviator-room); color: var(--aviator-text); min-height: 100vh; }
+  .aviator-topbar { border-bottom: 1px solid var(--aviator-border); }
+  .aviator-brandbar { background: var(--aviator-panel); }
+  .aviator-brand { color: var(--aviator-red); font-size: 28px; font-weight: 900; font-style: italic; }
+  .aviator-layout { display: grid; grid-template-columns: 285px minmax(0, 1fr); gap: 6px; padding: 6px; max-width: 1600px; margin: auto; }
+  .aviator-sidebar { background: var(--aviator-panel); border-radius: 8px; min-width: 0; height: 660px; display: flex; flex-direction: column; padding: 8px; }
+  .aviator-tabs { display: flex; padding: 4px; gap: 3px; background: var(--aviator-row); border-radius: 24px; }
+  .aviator-room .aviator-tab { flex: 1; height: 26px; font-size: 11px; border-radius: 20px; background: transparent; color: var(--aviator-muted); }
+  .aviator-room .aviator-tab:hover, .aviator-room .aviator-tab-active { background: var(--aviator-control); color: var(--aviator-text); }
+  .aviator-muted { color: var(--aviator-muted); }
+  .aviator-balance, .aviator-room .aviator-positive { color: var(--aviator-green); }
+  .aviator-bet-columns { display: grid; grid-template-columns: minmax(0, 1fr) 57px 46px 57px; gap: 3px; align-items: center; }
+  .aviator-bet-row { background: var(--aviator-row); border-radius: 20px; margin-bottom: 4px; padding: 7px 8px; font-size: 11px; }
+  .aviator-avatar { background: var(--aviator-control); width: 21px; height: 21px; display: inline-flex; align-items: center; justify-content: center; border-radius: 50%; font-size: 12px; flex-shrink: 0; }
+  .aviator-history { display: flex; align-items: center; gap: 16px; height: 32px; overflow: hidden; font-size: 11px; font-weight: 600; white-space: nowrap; padding: 0 10px; }
+  .aviator-history-low { color: var(--aviator-blue); }
+  .aviator-history-high { color: var(--aviator-violet); }
+  .aviator-history-rare { color: var(--aviator-red); }
+  .aviator-flight { position: relative; width: 100%; height: 450px; background: var(--aviator-blue-glow), var(--aviator-canvas); border: 1px solid var(--aviator-border); border-radius: 8px; overflow: hidden; }
+  .aviator-flight-high { background: var(--aviator-violet-glow), var(--aviator-canvas); }
+  .aviator-rays { position: absolute; inset: 0; background: var(--aviator-rays); }
+  .aviator-chart { position: absolute; inset: 0; height: 100%; width: 100%; }
+  .aviator-flight-label { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; pointer-events: none; }
+  .aviator-multiplier { font-size: 88px; font-weight: 800; line-height: 1.1; font-variant-numeric: tabular-nums; }
+  .aviator-ended, .aviator-flew-away { color: var(--aviator-red); }
+  .aviator-flew-away { font-size: 24px; font-weight: 700; margin-bottom: 10px; }
+  .aviator-countdown { width: 150px; height: 4px; background: var(--aviator-control); margin-top: 18px; border-radius: 4px; overflow: hidden; }
+  .aviator-countdown span { display: block; height: 100%; background: var(--aviator-red); transition: width 1s linear; }
+  .aviator-plane-away { transform: translate(1100px, -600px); transition: transform 0.85s ease-in; }
+  .aviator-propeller { transform-origin: 143px 48px; animation: aviator-propeller 0.12s linear infinite; }
+  .aviator-viewers { position: absolute; right: 10px; bottom: 10px; background: var(--aviator-row); display: flex; gap: 5px; align-items: center; font-size: 11px; border-radius: 15px; padding: 6px 10px; }
+  .aviator-win { color: var(--aviator-green); background: var(--aviator-row); padding: 6px 12px; border-radius: 6px; font-weight: 600; margin-top: 12px; }
+  .aviator-controls { margin-top: 6px; padding: 10px 16px 16px; background: var(--aviator-panel); border-radius: 8px; }
+  .aviator-control-grid { display: grid; grid-template-columns: minmax(150px, 220px) minmax(0, 1fr); gap: 18px; align-items: center; max-width: 670px; margin: 18px auto 0; }
+  .aviator-stake { display: flex; align-items: center; background: var(--aviator-row); border-radius: 20px; padding: 2px; }
+  .aviator-room .aviator-step { height: 26px; width: 26px; padding: 0; border-radius: 50%; background: var(--aviator-control); color: var(--aviator-muted); flex-shrink: 0; }
+  .aviator-room .aviator-step:hover { color: var(--aviator-text); }
+  .aviator-room .aviator-input { background: transparent; border: none; color: var(--aviator-text); text-align: center; font-size: 18px; font-weight: 700; height: 32px; padding: 0; min-width: 0; box-shadow: none; }
+  .aviator-input::-webkit-inner-spin-button { -webkit-appearance: none; }
+  .aviator-room .aviator-preset { height: 24px; border-radius: 20px; background: var(--aviator-row); color: var(--aviator-muted); padding: 0 8px; font-size: 12px; }
+  .aviator-room .aviator-preset:hover { background: var(--aviator-control); color: var(--aviator-text); }
+  .aviator-room .aviator-action { width: 100%; min-height: 76px; height: auto; background: var(--aviator-green); border: 1px solid var(--aviator-green-border); color: var(--aviator-text); font-weight: 500; font-size: 23px; line-height: 1.2; white-space: normal; }
+  .aviator-room .aviator-action:hover { filter: brightness(1.12); }
+  .aviator-room .aviator-action:active { transform: scale(0.99); }
+  .aviator-room .aviator-action:disabled { background: var(--aviator-control); border-color: var(--aviator-border); font-size: 18px; opacity: 0.7; }
+  .aviator-room .aviator-cashout { background: hsl(var(--gold)); border-color: hsl(var(--gold)); color: hsl(var(--gold-foreground)); }
+  .aviator-chat { background: var(--aviator-panel); border-radius: 8px; padding: 12px; margin-top: 6px; }
+  .aviator-chat summary { cursor: pointer; font-size: 13px; font-weight: 600; }
+  .aviator-chat-input { background: var(--aviator-row); color: var(--aviator-text); border-color: var(--aviator-border); }
+  @keyframes aviator-propeller { 50% { transform: scaleY(0.2); } }
+  @media (max-width: 767px) {
+    .aviator-layout { grid-template-columns: minmax(0, 1fr); }
+    .aviator-main { grid-row: 1; }
+    .aviator-sidebar { height: 360px; }
+    .aviator-flight { height: 330px; }
+    .aviator-multiplier { font-size: 64px; }
+    .aviator-control-grid { gap: 10px; grid-template-columns: minmax(125px, 0.9fr) minmax(0, 1fr); }
+    .aviator-controls { padding: 10px; }
+    .aviator-room .aviator-action { font-size: 19px; }
+    .aviator-plane-art { width: 110px; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .aviator-propeller { animation: none; }
+    .aviator-plane-away, .aviator-countdown span { transition: none; }
   }
 }
 
