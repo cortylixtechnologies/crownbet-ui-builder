@@ -2,9 +2,10 @@ import { useEffect, useRef, useState } from "react";
 import { AppLayout } from "@/components/layout/AppLayout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Plane, Send, RotateCw } from "lucide-react";
+import { Send, X, Minus, Plus, MessageCircle } from "lucide-react";
+import { Link } from "react-router-dom";
+import { AviatorFlightStage } from "@/components/games/AviatorFlightStage";
 import { toast } from "sonner";
-import planeImg from "@/assets/aviator-plane.png";
 import { usePlayGame } from "@/hooks/usePlayGame";
 
 type Phase = "waiting" | "running" | "crashed";
@@ -12,7 +13,7 @@ type LiveBet = { user: string; amount: number; cashedAt: number | null; win: num
 type ChatMsg = { id: number; user: string; text: string; color: string };
 
 const NAMES = ["a***1", "j***k", "m***z", "p***o", "x***9", "c***t", "r***5", "n***q", "k***l", "0***8", "f***r"];
-const COLORS = ["text-rose-400", "text-emerald-400", "text-sky-400", "text-amber-400", "text-fuchsia-400", "text-cyan-400"];
+const COLORS = ["aviator-history-rare", "aviator-positive", "aviator-history-low", "text-gold", "aviator-history-high", "aviator-history-low"];
 const rand = <T,>(a: T[]) => a[Math.floor(Math.random() * a.length)];
 
 const Aviator = () => {
@@ -28,8 +29,8 @@ const Aviator = () => {
   const [liveBets, setLiveBets] = useState<LiveBet[]>([]);
   const [tab, setTab] = useState<"all" | "previous" | "top">("all");
   const [chat, setChat] = useState<ChatMsg[]>([
-    { id: 1, user: "j***k", text: "lets fly 🚀", color: "text-emerald-400" },
-    { id: 2, user: "m***z", text: "cashed 5x 🔥", color: "text-amber-400" },
+    { id: 1, user: "j***k", text: "lets fly 🚀", color: "aviator-positive" },
+    { id: 2, user: "m***z", text: "cashed 5x 🔥", color: "text-gold" },
   ]);
   const [chatInput, setChatInput] = useState("");
   // Visual-only crash point. Server still owns the authoritative one.
@@ -172,162 +173,81 @@ const Aviator = () => {
     liveBets;
 
   return (
-    <AppLayout>
-      <div className="bg-surface-dark text-white min-h-[calc(100vh-120px)]">
-        <div className="flex items-center justify-between px-4 py-2 border-b border-white/10">
-          <div className="flex items-center gap-2 text-rose-500 font-extrabold italic text-xl">
-            <Plane className="w-5 h-5" /> Aviator
-          </div>
-          <div className="text-gold font-bold">${balance.toFixed(2)}</div>
+    <AppLayout hideHeader>
+      <div className="aviator-room">
+        <div className="aviator-topbar flex items-center justify-between px-4 py-2">
+          <Button asChild variant="ghost" size="icon" className="hover:bg-surface-dark-muted" aria-label="Close Aviator"><Link to="/virtuals"><X className="h-5 w-5" /></Link></Button>
+          <Button asChild className="bg-gold text-gold-foreground hover:bg-gold/90"><Link to="/me">Deposit</Link></Button>
         </div>
-
-        <div className="flex gap-2 overflow-x-auto px-3 py-2 border-b border-white/10 scrollbar-hide">
-          {history.map((h, i) => (
-            <span key={i} className={`px-2 py-0.5 rounded-full text-xs font-bold whitespace-nowrap ${h < 2 ? "text-sky-400" : h < 10 ? "text-fuchsia-400" : "text-rose-400"}`}>
-              {h.toFixed(2)}x
-            </span>
-          ))}
+        <div className="aviator-brandbar aviator-topbar flex items-center justify-between px-3 py-1">
+          <h1 className="aviator-brand">Aviator</h1>
+          <div className="aviator-balance text-sm font-bold">${balance.toFixed(2)}</div>
         </div>
-
-        <div className="grid lg:grid-cols-[280px_1fr_260px] gap-2 p-2">
-          <div className="bg-surface-dark-muted rounded-xl border border-white/10 flex flex-col text-xs max-h-[420px] lg:max-h-[600px]">
-            <div className="flex border-b border-white/10">
+        <div className="aviator-layout">
+          <aside className="aviator-sidebar" aria-label="Round bets">
+            <div className="aviator-tabs">
               {(["all", "previous", "top"] as const).map((t) => (
-                <button key={t} onClick={() => setTab(t)}
-                  className={`flex-1 py-2 capitalize font-bold ${tab === t ? "bg-white/10 text-white" : "text-white/60"}`}>
-                  {t === "all" ? "All Bets" : t}
-                </button>
+                <Button key={t} variant="ghost" onClick={() => setTab(t)} className={`aviator-tab ${tab === t ? "aviator-tab-active" : ""}`} aria-pressed={tab === t}>
+                  {t === "all" ? "All Bets" : t === "previous" ? "Previous" : "Top"}
+                </Button>
               ))}
             </div>
-            <div className="px-3 py-2 border-b border-white/10 flex items-center justify-between">
-              <div className="font-bold">{liveBets.length} <span className="text-white/50 font-normal">Bets</span></div>
-              <div className="text-right">
-                <div className="text-gold font-bold">${totalWin.toFixed(2)}</div>
-                <div className="text-white/50 text-[10px]">Total win</div>
-              </div>
+            <div className="flex justify-between items-center px-2 py-3">
+              <div><div className="flex -space-x-1 mb-1">{["⚽", "✈", "🎲"].map((v) => <span key={v} className="aviator-avatar">{v}</span>)}</div><div className="text-xs">{liveBets.length} <span className="aviator-muted">Bets</span></div></div>
+              <div className="text-right"><div className="font-bold">{totalWin.toFixed(2)}</div><div className="aviator-muted text-[10px]">Total win</div></div>
             </div>
-            <div className="grid grid-cols-[1fr_60px_50px_60px] px-3 py-1 text-white/50 text-[10px] border-b border-white/5">
-              <span>Player</span><span className="text-right">Bet</span><span className="text-right">x</span><span className="text-right">Win</span>
-            </div>
+            <div className="h-1 rounded-full bg-surface-dark-muted mb-3"><div className="h-full w-2/3 rounded-full bg-success" /></div>
+            <div className="aviator-bet-columns aviator-muted text-[10px] px-2 pb-2"><span>Player</span><span className="text-right">Bet $</span><span className="text-right">X</span><span className="text-right">Win $</span></div>
             <div className="overflow-y-auto flex-1 scrollbar-hide">
               {visibleBets.map((b, i) => (
-                <div key={i} className={`grid grid-cols-[1fr_60px_50px_60px] px-3 py-1.5 border-b border-white/5 ${b.cashedAt ? "bg-success/5" : ""}`}>
-                  <span className="text-white/80">{b.user}</span>
-                  <span className="text-right">${b.amount}</span>
-                  <span className={`text-right ${b.cashedAt ? "text-success" : "text-white/30"}`}>{b.cashedAt ? `${b.cashedAt.toFixed(2)}x` : "-"}</span>
-                  <span className={`text-right ${b.win ? "text-success font-bold" : "text-white/30"}`}>{b.win ? b.win.toFixed(2) : "-"}</span>
+                <div key={i} className="aviator-bet-columns aviator-bet-row">
+                  <span className="flex items-center gap-1.5 min-w-0"><span className="aviator-avatar">{["⚽", "✈", "🎲", "★"][i % 4]}</span><span>{b.user}</span></span>
+                  <span className="text-right">{b.amount.toFixed(2)}</span>
+                  <span className={`text-right ${b.cashedAt ? "aviator-positive" : "aviator-muted"}`}>{b.cashedAt ? `${b.cashedAt.toFixed(2)}x` : "—"}</span>
+                  <span className={`text-right ${b.win ? "aviator-positive" : "aviator-muted"}`}>{b.win ? b.win.toFixed(2) : "—"}</span>
                 </div>
               ))}
             </div>
-          </div>
-
-          <div className="space-y-2">
-            <div className="relative h-72 rounded-2xl bg-gradient-to-br from-indigo-950 via-purple-950 to-rose-950 overflow-hidden flex items-center justify-center border border-white/10">
-              <div className="absolute inset-0 opacity-30 bg-[radial-gradient(circle_at_30%_70%,transparent_0%,#000_70%)]" />
-              <img
-                src={planeImg}
-                alt="Aviator plane"
-                className={`absolute w-28 h-auto pointer-events-none ${phase === "crashed" ? "transition-all duration-700 ease-in opacity-0" : "transition-transform duration-100"}`}
-                style={{
-                  left: 0,
-                  bottom: 0,
-                  transform: phase === "running"
-                    ? `translate(${Math.min(multiplier * 40, 280)}px, ${-Math.min(multiplier * 32, 180)}px)`
-                    : phase === "crashed" ? "translate(800px, -600px) scale(0.4)" : "translate(-20px, -10px)",
-                }}
-              />
-              <div className="text-center z-10">
-                {phase === "waiting" && (
-                  <>
-                    <div className="text-white/70 text-sm font-bold mb-2 tracking-widest">NEXT ROUND IN</div>
-                    <div className="text-6xl font-black text-gold">{countdown}s</div>
-                    <RotateCw className="w-5 h-5 text-white/40 animate-spin mx-auto mt-3" />
-                  </>
-                )}
-                {phase === "running" && (
-                  <div className="text-7xl font-black text-white drop-shadow-[0_0_20px_rgba(255,255,255,0.4)]">
-                    {multiplier.toFixed(2)}x
-                  </div>
-                )}
-                {phase === "crashed" && (
-                  <>
-                    <div className="text-rose-500 font-extrabold text-2xl tracking-widest mb-1">FLEW AWAY!</div>
-                    <div className="text-6xl font-black text-rose-500">{multiplier.toFixed(2)}x</div>
-                  </>
-                )}
-                {cashedAt !== null && phase !== "waiting" && (
-                  <div className="mt-3 inline-block bg-success/20 border border-success rounded-lg px-3 py-1 text-success font-bold">
-                    Won ${(bet * cashedAt).toFixed(2)} @ {cashedAt.toFixed(2)}x
-                  </div>
-                )}
-              </div>
+            <div className="aviator-muted flex justify-between text-[10px] pt-3"><span>Simulated activity</span><span>CrownBet</span></div>
+          </aside>
+          <div className="aviator-main min-w-0">
+            <div className="aviator-history" aria-label="Recent round multipliers">
+              {history.map((h, i) => <span key={i} className={h < 2 ? "aviator-history-low" : h < 10 ? "aviator-history-high" : "aviator-history-rare"}>{h.toFixed(2)}x</span>)}
             </div>
-
-            <div className="bg-surface-dark-muted rounded-xl p-3 border border-white/10 space-y-2">
-              <div className="flex items-center gap-2">
-                <Button size="sm" variant="outline" onClick={() => setBet((b) => Math.max(1, b - 10))} className="border-white/20 text-white">−</Button>
-                <Input type="number" value={bet} onChange={(e) => setBet(+e.target.value)}
-                  className="bg-surface-dark border-white/10 text-white text-center font-bold" />
-                <Button size="sm" variant="outline" onClick={() => setBet((b) => b + 10)} className="border-white/20 text-white">+</Button>
-              </div>
-              <div className="grid grid-cols-4 gap-1">
-                {[10, 50, 100, 500].map((v) => (
-                  <button key={v} onClick={() => setBet(v)}
-                    className="bg-white/5 hover:bg-white/10 border border-white/10 rounded py-1 text-xs font-bold">
-                    ${v}
-                  </button>
-                ))}
-              </div>
-              {phase === "waiting" && !hasBet && (
-                <Button onClick={placeBet} className="w-full bg-success hover:bg-success/90 h-14 text-lg font-extrabold">
-                  BET ${bet.toFixed(2)}
-                </Button>
-              )}
-              {phase === "waiting" && hasBet && (
-                <Button disabled className="w-full bg-white/10 h-14 text-base font-bold text-white/50">
-                  WAITING {countdown}s…
-                </Button>
-              )}
-              {phase === "running" && hasBet && cashedAt === null && (
-                <Button onClick={cashout} className="w-full bg-gold text-gold-foreground hover:bg-gold/90 h-14 text-lg font-extrabold animate-pulse">
-                  CASH OUT ${(bet * multiplier).toFixed(2)}
-                </Button>
-              )}
-              {phase === "running" && !hasBet && (
-                <Button disabled className="w-full bg-white/10 h-14 text-base font-bold text-white/50">
-                  WAIT FOR NEXT ROUND
-                </Button>
-              )}
-              {phase === "running" && hasBet && cashedAt !== null && (
-                <Button disabled className="w-full bg-success/20 text-success h-14 text-base font-bold">
-                  CASHED OUT @ {cashedAt.toFixed(2)}x
-                </Button>
-              )}
-              {phase === "crashed" && (
-                <Button disabled className="w-full bg-rose-900/40 text-rose-300 h-14 text-base font-bold">
-                  ROUND ENDED
-                </Button>
-              )}
-            </div>
-          </div>
-
-          <div className="bg-surface-dark-muted rounded-xl border border-white/10 flex flex-col max-h-[420px] lg:max-h-[600px]">
-            <div className="px-3 py-2 border-b border-white/10 font-bold text-sm">💬 Chat</div>
-            <div className="flex-1 overflow-y-auto px-3 py-2 space-y-1.5 text-xs scrollbar-hide">
-              {chat.map((m) => (
-                <div key={m.id}>
-                  <span className={`font-bold ${m.color}`}>{m.user}: </span>
-                  <span className="text-white/80">{m.text}</span>
+            <AviatorFlightStage phase={phase} multiplier={multiplier} countdown={countdown} cashedAt={cashedAt} bet={bet} spectators={liveBets.length} />
+            <div className="aviator-controls">
+              <div className="text-center text-xs font-semibold aviator-muted">Bet</div>
+              <div className="aviator-control-grid">
+                <div>
+                  <div className="aviator-stake">
+                    <Button size="icon" variant="ghost" aria-label="Decrease stake" onClick={() => setBet((b) => Math.max(1, b - 10))} className="aviator-step"><Minus /></Button>
+                    <Input aria-label="Bet amount" type="number" value={bet} onChange={(e) => setBet(+e.target.value)} className="aviator-input" />
+                    <Button size="icon" variant="ghost" aria-label="Increase stake" onClick={() => setBet((b) => b + 10)} className="aviator-step"><Plus /></Button>
+                  </div>
+                  <div className="grid grid-cols-2 gap-1 mt-2">
+                    {[10, 50, 100, 500].map((v) => <Button key={v} variant="ghost" onClick={() => setBet(v)} className="aviator-preset">{v.toLocaleString()}</Button>)}
+                  </div>
                 </div>
-              ))}
+                <div>
+                  {phase === "waiting" && !hasBet && <Button onClick={placeBet} className="aviator-action"><span>Bet<br />${bet.toFixed(2)}</span></Button>}
+                  {phase === "waiting" && hasBet && <Button disabled className="aviator-action">Waiting {countdown}s…</Button>}
+                  {phase === "running" && hasBet && cashedAt === null && <Button onClick={cashout} className="aviator-action aviator-cashout"><span>Cash out<br />${(bet * multiplier).toFixed(2)}</span></Button>}
+                  {phase === "running" && !hasBet && <Button disabled className="aviator-action">Wait for next round</Button>}
+                  {phase === "running" && hasBet && cashedAt !== null && <Button disabled className="aviator-action">Cashed out @ {cashedAt.toFixed(2)}x</Button>}
+                  {phase === "crashed" && <Button disabled className="aviator-action">Round ended</Button>}
+                </div>
+              </div>
             </div>
-            <div className="p-2 border-t border-white/10 flex gap-1">
-              <Input value={chatInput} onChange={(e) => setChatInput(e.target.value)}
-                onKeyDown={(e) => e.key === "Enter" && sendChat()}
-                placeholder="Say something..."
-                className="bg-surface-dark border-white/10 text-white text-xs h-9" />
-              <Button onClick={sendChat} size="icon" className="h-9 w-9 bg-primary"><Send className="w-4 h-4" /></Button>
-            </div>
+            <details className="aviator-chat">
+              <summary><MessageCircle className="inline-block h-4 w-4 mr-2" />Chat</summary>
+              <div className="h-36 overflow-y-auto py-3 space-y-1.5 text-xs scrollbar-hide">
+                {chat.map((m) => <div key={m.id}><span className={`font-bold ${m.color}`}>{m.user}: </span><span>{m.text}</span></div>)}
+              </div>
+              <div className="flex gap-2">
+                <Input value={chatInput} onChange={(e) => setChatInput(e.target.value)} onKeyDown={(e) => e.key === "Enter" && sendChat()} placeholder="Say something..." aria-label="Chat message" className="aviator-chat-input" />
+                <Button onClick={sendChat} size="icon" aria-label="Send message"><Send className="w-4 h-4" /></Button>
+              </div>
+            </details>
           </div>
         </div>
       </div>
