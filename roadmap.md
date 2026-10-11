@@ -5,5 +5,5 @@
 - [x] Restyle the header and home to match the SportyBet visual reference, retaining CrownBet identity and existing sign-in gates.
 - [x] Verify home layout, browsing links, and sign-in prompts.
 # Aviator reference update
-- [ ] Match the reference flight screen and compact betting layout without changing payouts.
-- [ ] Verify takeoff, curved flight, fly-away, and next-round reset.
+- [x] Match the reference flight screen and compact betting layout without changing payouts.
+- [x] Verify takeoff, curved flight, fly-away, and next-round reset.
