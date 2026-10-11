@@ -1,4 +1,6 @@
+import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import { DepositDialog } from "@/components/DepositDialog";
 import { AppLayout } from "@/components/layout/AppLayout";
 import { useAuth } from "@/context/AuthContext";
 import { User, Moon, Wallet, ArrowDownCircle, Receipt, RefreshCw, Gift, Headphones, Info, ChevronRight, Crown, LogOut } from "lucide-react";
@@ -8,6 +10,7 @@ import { ADMIN_BASE } from "@/config/adminPath";
 const Me = () => {
   const { session, profile, signOut, isAdmin } = useAuth();
   const navigate = useNavigate();
+  const [depositOpen, setDepositOpen] = useState(false);
 
   const logout = async () => {
     await signOut();
@@ -51,8 +54,9 @@ const Me = () => {
           </span>
         </div>
 
+        <DepositDialog open={depositOpen} onOpenChange={setDepositOpen} />
         <div className="grid grid-cols-2 gap-3 mt-4">
-          <button className="bg-success text-success-foreground py-3 rounded-lg font-bold flex items-center justify-center gap-2">
+          <button onClick={() => (session ? setDepositOpen(true) : navigate("/login"))} className="bg-success text-success-foreground py-3 rounded-lg font-bold flex items-center justify-center gap-2">
             <Wallet className="w-5 h-5" /> Deposit
           </button>
           <button className="border-2 border-success text-success py-3 rounded-lg font-bold flex items-center justify-center gap-2">

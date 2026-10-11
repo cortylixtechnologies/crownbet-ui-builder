@@ -197,6 +197,42 @@ export type Database = {
         }
         Relationships: []
       }
+      deposits: {
+        Row: {
+          amount: number
+          created_at: string
+          credited_at: string | null
+          id: string
+          order_id: string | null
+          phone: string
+          status: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          amount: number
+          created_at?: string
+          credited_at?: string | null
+          id?: string
+          order_id?: string | null
+          phone: string
+          status?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          credited_at?: string | null
+          id?: string
+          order_id?: string | null
+          phone?: string
+          status?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       game_categories: {
         Row: {
           active: boolean
@@ -882,6 +918,7 @@ export type Database = {
         }[]
       }
       claim_welcome_credit: { Args: never; Returns: number }
+      credit_deposit: { Args: { _order_id: string }; Returns: boolean }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
