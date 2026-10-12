@@ -124,7 +124,7 @@ Deno.serve(async (req) => {
         const ymd = fmtDate(d).replace(/-/g, "");
         await Promise.all(ESPN_LEAGUES.map(async ([sport, path, label]) => {
           try {
-            const r = await fetch(`https://site.api.espn.com/apis/site/v2/sports/${path}/scoreboard?dates=${ymd}`);
+            const r = await fetch(`https://site.api.espn.com/apis/site/v2/sports/${path}/scoreboard?dates=${ymd}`, { headers: { "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/124 Safari/537.36", Accept: "application/json" } });
             if (!r.ok) { bump(`espn_http_${r.status}`); return; }
             const j: any = await r.json();
             for (const ev of j?.events ?? []) {
