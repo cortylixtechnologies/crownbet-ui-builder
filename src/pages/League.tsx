@@ -4,7 +4,16 @@ import { AppLayout } from "@/components/layout/AppLayout";
 import { MatchCard } from "@/components/MatchCard";
 import { ChevronLeft, Trophy } from "lucide-react";
 import { useMatches } from "@/hooks/useMatches";
-import { sportsCatalog, slugify } from "@/data/mockData";
+import { sportsCatalog, slugify, localISODate } from "@/data/mockData";
+
+// Sport-level pages map to the stored sport name
+const SPORT_SLUGS: Record<string, string> = {
+  football: "soccer", soccer: "soccer", basketball: "basketball", tennis: "tennis",
+  "ice-hockey": "ice hockey", cricket: "cricket", rugby: "rugby", baseball: "baseball",
+  "american-football": "american football", efootball: "esports", esports: "esports",
+  "table-tennis": "table tennis", handball: "handball", volleyball: "volleyball",
+  vfootball: "vfootball", motorsport: "motorsport",
+};
 
 const League = () => {
   const { slug = "" } = useParams();
@@ -19,11 +28,21 @@ const League = () => {
   }, [slug]);
 
   const filtered = useMemo(() => {
+    const sport = SPORT_SLUGS[slug];
+    if (sport) return matches.filter((m) => (m.sport ?? "soccer") === sport);
+    if (slug === "today-s-football") return matches.filter((m) => m.sport === "soccer" && (m.rawDate === localISODate() || m.live));
+    if (slug === "football-in-next-3-hours") {
+      const now = new Date(); const later = new Date(now.getTime() + 3 * 3600_000);
+      return matches.filter((m) => {
+        if (m.sport !== "soccer" || !m.rawDate) return false;
+        const t = new Date(`${m.rawDate}T${m.time}:00`);
+        return t >= now && t <= later;
+      });
+    }
     const exact = matches.filter((m) => slugify(m.league) === slug);
     if (exact.length) return exact;
-    const t = leagueName.toLowerCase().split(" ")[0];
-    const fuzzy = matches.filter((m) => m.league.toLowerCase().includes(t));
-    return fuzzy.length ? fuzzy : matches.slice(0, 4);
+    const words = leagueName.toLowerCase().split(" ").filter((w) => w.length > 2 && !["league", "the"].includes(w));
+    return matches.filter((m) => words.some((w) => m.league.toLowerCase().includes(w)));
   }, [slug, leagueName, matches]);
 
   return (
@@ -40,6 +59,9 @@ const League = () => {
       </div>
 
       <div className="px-3 py-3 space-y-3">
+        {filtered.length === 0 && (
+          <p className="py-10 text-center text-sm text-muted-foreground">No matches available here right now. Check back soon.</p>
+        )}
         {filtered.map((m) => <MatchCard key={m.id} match={m} />)}
       </div>
     </AppLayout>
