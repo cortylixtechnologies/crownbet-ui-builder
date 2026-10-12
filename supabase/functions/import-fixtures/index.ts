@@ -36,6 +36,40 @@ const defaultOdds = (sport: string) => {
   }
 };
 
+// Free, keyless ESPN scoreboards (second source) — sport, path, label
+const ESPN_LEAGUES: [string, string, string][] = [
+  ["soccer", "soccer/eng.1", "England Premier League"],
+  ["soccer", "soccer/eng.2", "England Championship"],
+  ["soccer", "soccer/esp.1", "Spain La Liga"],
+  ["soccer", "soccer/ita.1", "Italy Serie A"],
+  ["soccer", "soccer/ger.1", "Bundesliga"],
+  ["soccer", "soccer/fra.1", "France Ligue 1"],
+  ["soccer", "soccer/ned.1", "Eredivisie"],
+  ["soccer", "soccer/por.1", "Primeira Liga"],
+  ["soccer", "soccer/usa.1", "MLS"],
+  ["soccer", "soccer/ksa.1", "Saudi Pro League"],
+  ["soccer", "soccer/uefa.champions", "Champions League"],
+  ["soccer", "soccer/uefa.europa", "Europa League"],
+  ["soccer", "soccer/uefa.europa.conf", "Conference League"],
+  ["soccer", "soccer/fifa.worldq.uefa", "World Cup Qualifiers UEFA"],
+  ["soccer", "soccer/fifa.worldq.caf", "World Cup Qualifiers CAF"],
+  ["soccer", "soccer/fifa.friendly", "International Friendlies"],
+  ["basketball", "basketball/nba", "NBA"],
+  ["basketball", "basketball/wnba", "WNBA"],
+  ["ice hockey", "hockey/nhl", "NHL"],
+  ["american football", "football/nfl", "NFL"],
+  ["american football", "football/college-football", "NCAA Football"],
+  ["baseball", "baseball/mlb", "MLB"],
+  ["tennis", "tennis/atp", "ATP"],
+  ["tennis", "tennis/wta", "WTA"],
+];
+
+// Convert an ISO UTC timestamp into Dar es Salaam (UTC+3) date + time
+const toEAT = (iso: string) => {
+  const d = new Date(new Date(iso).getTime() + 3 * 3600_000);
+  return { date: d.toISOString().slice(0, 10), time: d.toISOString().slice(11, 16) };
+};
+
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
 
@@ -64,8 +98,63 @@ Deno.serve(async (req) => {
     const reasons: Record<string, number> = {};
     const bump = (k: string) => { reasons[k] = (reasons[k] ?? 0) + 1; };
     const seenLeagues = new Set<string>();
-    const daysAhead = 10;
-    const today = new Date();
+    let body: any = {};
+    try { body = await req.json(); } catch { /* cron call without body */ }
+    const startStr = /^\d{4}-\d{2}-\d{2}$/.test(body?.date ?? "") ? body.date : toEAT(new Date().toISOString()).date;
+    const daysAhead = Math.min(Math.max(Number(body?.days) || 3, 1), 10);
+    const today = new Date(`${startStr}T00:00:00Z`);
+    const sources: string[] = Array.isArray(body?.sources) ? body.sources : ["thesportsdb", "espn"];
+
+    const upsert = async (row: any) => {
+      const { data: existing } = await supabase.from("matches").select("id").eq("external_id", row.external_id).maybeSingle();
+      if (existing) {
+        const { error } = await supabase.from("matches").update({
+          league: row.league, home: row.home, away: row.away, match_date: row.match_date, match_time: row.match_time,
+        }).eq("id", existing.id);
+        if (error) { bump(`upd_${error.code ?? "err"}`); skipped++; } else updated++;
+      } else {
+        const { error } = await supabase.from("matches").insert(row);
+        if (error) { bump(`ins_${error.code ?? "err"}`); skipped++; } else imported++;
+      }
+    };
+
+    if (sources.includes("espn")) {
+      for (let i = 0; i < daysAhead; i++) {
+        const d = new Date(today); d.setUTCDate(today.getUTCDate() + i);
+        const ymd = fmtDate(d).replace(/-/g, "");
+        await Promise.all(ESPN_LEAGUES.map(async ([sport, path, label]) => {
+          try {
+            const r = await fetch(`https://site.api.espn.com/apis/site/v2/sports/${path}/scoreboard?dates=${ymd}`, { headers: { "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/124 Safari/537.36", Accept: "application/json" } });
+            if (!r.ok) { bump(`espn_http_${r.status}`); return; }
+            const j: any = await r.json();
+            for (const ev of j?.events ?? []) {
+              fetched++;
+              const comps = ev?.competitions ?? [];
+              for (const c of comps) {
+                const state = c?.status?.type?.state ?? ev?.status?.type?.state;
+                if (state === "post") { bump("espn_finished"); continue; }
+                const teams = c?.competitors ?? [];
+                const h = teams.find((t: any) => t.homeAway === "home") ?? teams[0];
+                const a = teams.find((t: any) => t.homeAway === "away") ?? teams[1];
+                const name = (t: any) => t?.team?.displayName ?? t?.athlete?.displayName ?? t?.athlete?.fullName;
+                if (!name(h) || !name(a)) { bump("espn_missing_teams"); continue; }
+                const when = toEAT(c?.date ?? ev.date);
+                const odds = defaultOdds(sport);
+                matched++;
+                await upsert({
+                  sport, external_id: `espn_${c?.id ?? ev.id}`, league: label,
+                  home: name(h), away: name(a), match_date: when.date, match_time: when.time,
+                  odds_home: odds.home, odds_draw: odds.draw ?? 0, odds_away: odds.away,
+                  live: false, hot: false, approved: false, source: "espn",
+                });
+              }
+            }
+          } catch { bump("espn_fetch_error"); }
+        }));
+      }
+    }
+
+    if (!sources.includes("thesportsdb")) sportsMap.clear();
 
     for (const [sport, { ids, names }] of sportsMap) {
       const tsdbSport = SPORT_TO_TSDB[sport];

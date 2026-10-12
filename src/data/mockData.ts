@@ -13,6 +13,8 @@ export type Match = {
   score?: string;
   minute?: string;
   hot?: boolean;
+  sport?: string;
+  rawDate?: string;
 };
 
 export type SportLeagues = { name: string; count: number; leagues: string[] };
@@ -61,13 +63,33 @@ export const recommendedCodes = [
 export const slugify = (s: string) => s.toLowerCase().replace(/[^\w]+/g, "-").replace(/^-|-$/g, "");
 
 // Map a database `matches` row into the Match shape used by UI components
+// Local (Dar es Salaam / browser) calendar date as YYYY-MM-DD
+export const localISODate = (d = new Date()) => {
+  const z = new Date(d.getTime() - d.getTimezoneOffset() * 60000);
+  return z.toISOString().slice(0, 10);
+};
+
+// Turn a stored ISO date into a friendly label relative to today
+export const dateLabel = (raw: string) => {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(raw)) return raw;
+  const today = localISODate();
+  const tm = new Date(); tm.setDate(tm.getDate() + 1);
+  if (raw === today) return "Today";
+  if (raw === localISODate(tm)) return "Tomorrow";
+  const [y, m, d] = raw.split("-");
+  const wd = new Date(`${raw}T12:00:00`).toLocaleDateString("en-GB", { weekday: "short" });
+  return `${wd} ${d}/${m}/${y}`;
+};
+
 export const mapDbMatch = (r: any): Match => ({
+  sport: r.sport ?? "soccer",
+  rawDate: r.match_date,
   id: r.id,
   league: r.league,
   leagueIcon: r.league_icon ?? undefined,
   home: r.home,
   away: r.away,
-  date: r.match_date,
+  date: dateLabel(r.match_date),
   time: r.match_time,
   odds: { home: Number(r.odds_home), draw: Number(r.odds_draw), away: Number(r.odds_away) },
   live: r.live,
