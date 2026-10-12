@@ -48,6 +48,8 @@ const AdminMatches = () => {
   const [form, setForm] = useState(empty);
   const [tab, setTab] = useState<"pending" | "published" | "all">("pending");
   const [importing, setImporting] = useState(false);
+  const [importDate, setImportDate] = useState(() => new Date(Date.now() - new Date().getTimezoneOffset() * 60000).toISOString().slice(0, 10));
+  const [importDays, setImportDays] = useState(1);
   const [query, setQuery] = useState("");
   const [leagueFilter, setLeagueFilter] = useState<string>("all");
   const [sourceFilter, setSourceFilter] = useState<string>("all");
@@ -91,7 +93,7 @@ const AdminMatches = () => {
 
   const runImport = async () => {
     setImporting(true);
-    const { data, error } = await supabase.functions.invoke("import-fixtures");
+    const { data, error } = await supabase.functions.invoke("import-fixtures", { body: { date: importDate, days: importDays } });
     setImporting(false);
     if (error) return toast.error(error.message);
     toast.success(
@@ -151,12 +153,18 @@ const AdminMatches = () => {
       <div className="flex items-start justify-between gap-3 flex-wrap">
         <div>
           <h1 className="text-3xl font-extrabold">Matches</h1>
-          <p className="text-muted-foreground">Auto-imported fixtures land in <b>Pending</b>. Approve to publish.</p>
+          <p className="text-muted-foreground">Auto-imported fixtures land in <b>Pending</b> (sources: TheSportsDB + ESPN). Set odds, then approve to publish.</p>
         </div>
+        <div className="flex items-center gap-2 flex-wrap">
+        <Input type="date" value={importDate} onChange={(e) => setImportDate(e.target.value)} className="w-40" aria-label="Import from date" />
+        <select value={importDays} onChange={(e) => setImportDays(+e.target.value)} className="h-10 rounded-md border border-input bg-background px-3 text-sm" aria-label="Days to import">
+          {[1, 2, 3, 5, 7].map((d) => <option key={d} value={d}>{d === 1 ? "That day only" : `${d} days`}</option>)}
+        </select>
         <Button onClick={runImport} disabled={importing} className="bg-primary">
           {importing ? <RefreshCw className="w-4 h-4 mr-2 animate-spin" /> : <Download className="w-4 h-4 mr-2" />}
-          Import fixtures now
+          Import matches
         </Button>
+        </div>
       </div>
 
       <Card>
