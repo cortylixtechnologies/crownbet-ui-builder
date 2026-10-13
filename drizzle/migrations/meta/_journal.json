@@ -8,6 +8,13 @@
       "when": 1791718185802,
       "tag": "0000_harakapay_deposits",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1791914757240,
+      "tag": "0001_admin_bets_tools",
+      "breakpoints": true
     }
   ]
 }
