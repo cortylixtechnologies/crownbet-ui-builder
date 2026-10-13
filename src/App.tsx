@@ -45,6 +45,7 @@ import AdminMatches from "./pages/admin/AdminMatches";
 import AdminLive from "./pages/admin/AdminLive";
 import AdminPromotions from "./pages/admin/AdminPromotions";
 import AdminUsers from "./pages/admin/AdminUsers";
+import AdminBets from "./pages/admin/AdminBets";
 import AdminSettings from "./pages/admin/AdminSettings";
 import AdminGames from "./pages/admin/AdminGames";
 import AdminSports from "./pages/admin/AdminSports";
@@ -105,6 +106,7 @@ const App = () => (
                 <Route path="live" element={<AdminLive />} />
                 <Route path="promotions" element={<AdminPromotions />} />
                 <Route path="users" element={<AdminUsers />} />
+                <Route path="bets" element={<AdminBets />} />
                 <Route path="settings" element={<AdminSettings />} />
                 <Route path="games" element={<AdminGames />} />
                 <Route path="sports" element={<AdminSports />} />
