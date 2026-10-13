@@ -3,6 +3,8 @@ import { Link, useNavigate } from "react-router-dom";
 import { AppLayout } from "@/components/layout/AppLayout";
 import { Search, Share2, Trophy, Medal, Award, Grid3x3, ChevronRight, Crown } from "lucide-react";
 import { sportsCatalog, slugify } from "@/data/mockData";
+import { useMatches } from "@/hooks/useMatches";
+import { usePromotions } from "@/hooks/usePromotions";
 
 const topActions = [
   { label: "Load Code", icon: Share2, to: "/load-code" },
@@ -12,12 +14,15 @@ const topActions = [
   { label: "Results", icon: Award, to: "/results" },
 ];
 
-const tabs = ["Sports", "Live (108)", "Promotions (20)"] as const;
 
 const Menu = () => {
   const [tab, setTab] = useState(0);
   const [activeSport, setActiveSport] = useState(sportsCatalog[0].name);
   const navigate = useNavigate();
+  const { matches: liveMatches } = useMatches({ live: true });
+  const { promotions } = usePromotions() as any;
+  const promoCount = (promotions ?? []).length;
+  const tabs = ["Sports", `Live (${liveMatches.length})`, `Promotions (${promoCount})`];
   const sport = sportsCatalog.find((s) => s.name === activeSport)!;
 
   return (
@@ -103,7 +108,7 @@ const Menu = () => {
 
       {tab === 1 && (
         <div className="bg-card p-6 text-center min-h-[40vh]">
-          <p className="text-foreground font-bold mb-2">108 Live events available</p>
+          <p className="text-foreground font-bold mb-2">{liveMatches.length > 0 ? `${liveMatches.length} live events available` : "No live events right now"}</p>
           <Link to="/live" className="inline-block mt-2 px-6 py-3 bg-gradient-primary text-primary-foreground rounded-lg font-bold">
             Open Live Center
           </Link>
@@ -112,7 +117,7 @@ const Menu = () => {
 
       {tab === 2 && (
         <div className="bg-card p-6 text-center min-h-[40vh]">
-          <p className="text-foreground font-bold mb-2">20 active promotions</p>
+          <p className="text-foreground font-bold mb-2">{promoCount} active promotions</p>
           <Link to="/promotions" className="inline-block mt-2 px-6 py-3 bg-gradient-primary text-primary-foreground rounded-lg font-bold">
             View Promotions
           </Link>
