@@ -20,8 +20,8 @@ const Menu = () => {
   const [activeSport, setActiveSport] = useState(sportsCatalog[0].name);
   const navigate = useNavigate();
   const { matches: liveMatches } = useMatches({ live: true });
-  const { promotions } = usePromotions() as any;
-  const promoCount = (promotions ?? []).length;
+  const { promos } = usePromotions();
+  const promoCount = promos.length;
   const tabs = ["Sports", `Live (${liveMatches.length})`, `Promotions (${promoCount})`];
   const sport = sportsCatalog.find((s) => s.name === activeSport)!;
 
