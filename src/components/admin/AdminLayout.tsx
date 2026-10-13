@@ -36,6 +36,7 @@ const items = [
   { to: `${ADMIN_BASE}/risk`, label: "Risk Controls", icon: ShieldAlert },
   { to: `${ADMIN_BASE}/audit`, label: "Audit Log", icon: ClipboardList },
   { to: `${ADMIN_BASE}/users`, label: "Users", icon: Users },
+  { to: `${ADMIN_BASE}/bets`, label: "Bets", icon: Ticket },
   { to: `${ADMIN_BASE}/settings`, label: "Settings", icon: Settings },
 ];
 

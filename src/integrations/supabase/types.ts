@@ -865,6 +865,10 @@ export type Database = {
         }
         Returns: number
       }
+      admin_settle_bet: {
+        Args: { _bet_id: string; _result: string }
+        Returns: number
+      }
       aviator_cashout: {
         Args: { _claimed_multiplier: number; _round_id: string }
         Returns: {
