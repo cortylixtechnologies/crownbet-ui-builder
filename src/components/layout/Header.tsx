@@ -55,17 +55,17 @@ export const Header = ({ variant = "default" }: { variant?: "default" | "games" 
     <header className="relative z-40 reference-header">
       {/* ---------- Mobile bar ---------- */}
       <div className="lg:hidden bg-primary text-primary-foreground">
-        <div className="flex items-center justify-between px-4 py-3 gap-3">
-          <Link to="/" className="flex items-center gap-1.5 font-extrabold text-xl">
+        <div className="flex items-center justify-between px-3 py-3 gap-2">
+          <Link to="/" className="flex items-center gap-1 font-extrabold text-lg shrink-0">
             <Crown className="w-6 h-6 text-gold fill-gold" />
             <span>Crown<span className="text-gold">Bet</span></span>
             {variant === "games" && (
-              <span className="ml-1 px-2 py-0.5 rounded-full bg-card text-primary text-xs font-bold">GAMES</span>
+              <span className="hidden sm:inline ml-1 px-2 py-0.5 rounded-full bg-card text-primary text-xs font-bold">GAMES</span>
             )}
           </Link>
           <div className="flex items-center gap-2">
             {variant !== "search" && (
-              <Button variant="ghost" size="icon" onClick={() => navigate("/search")} className="p-2 rounded-full hover:bg-primary-foreground/10 transition" aria-label="Search">
+              <Button variant="ghost" size="icon" onClick={() => navigate("/search")} className="h-8 w-8 p-1 rounded-full hover:bg-primary-foreground/10 transition" aria-label="Search">
                 <Search className="w-5 h-5" />
               </Button>
             )}
@@ -164,9 +164,7 @@ export const Header = ({ variant = "default" }: { variant?: "default" | "games" 
                 {n.label}
               </NavLink>
             ))}
-            <Button variant="ghost" size="icon" onClick={() => navigate("/search")} className="ml-auto mb-1 p-2 rounded-full hover:bg-primary-foreground/10 transition" aria-label="Search">
-              <Search className="w-5 h-5" />
-            </Button>
+            <span className="ml-auto self-center text-xs whitespace-nowrap pl-3">GMT+03:00</span>
           </nav>
         </div>
       </div>

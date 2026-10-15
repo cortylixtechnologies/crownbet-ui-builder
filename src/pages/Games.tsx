@@ -29,7 +29,7 @@ const Games = () => {
   const { requireAuth } = useAuthGate();
   const load = async () => {
     setLoading(true);
-    const { data, error } = await supabase.from("games").select("slug").eq("active", true);
+    const { data, error } = await supabase.from("games").select("slug").eq("active", true).eq("maintenance", false);
     setActiveSlugs((data ?? []).map((game) => game.slug));
     setLoadError(Boolean(error));
     setLoading(false);
@@ -68,7 +68,7 @@ const Games = () => {
         </div>
       </div>
     </div>
-    <Dialog open={Boolean(preview)} onOpenChange={(open) => { if (!open) setPreview(null); }}><DialogContent className="max-w-sm"><DialogHeader><DialogTitle>{preview?.title}</DialogTitle><DialogDescription>This title is not available to play yet. No stake will be taken.</DialogDescription></DialogHeader>{preview && <div className="w-48 mx-auto rounded overflow-hidden"><GameCover slug={preview.slug} title={preview.title} /></div>}<Button onClick={() => { setPreview(null); setCategory("Playable"); }}>Browse playable games</Button></DialogContent></Dialog>
+    <Dialog open={Boolean(preview)} onOpenChange={(open) => { if (!open) setPreview(null); }}><DialogContent className="max-w-sm"><DialogHeader><DialogTitle>{preview?.title}</DialogTitle><DialogDescription>{preview && gameCatalog.find((game) => game.slug === preview.slug)?.playable ? "This game is currently unavailable. No stake will be taken." : "This provider title is a preview and is not available to play yet. No stake will be taken."}</DialogDescription></DialogHeader>{preview && <div className="w-48 mx-auto rounded overflow-hidden"><GameCover slug={preview.slug} title={preview.title} /></div>}<Button onClick={() => { setPreview(null); setCategory("Playable"); }}>Browse playable games</Button></DialogContent></Dialog>
   </AppLayout>;
 };
 export default Games;
