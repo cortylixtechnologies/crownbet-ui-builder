@@ -1,38 +1,6 @@
 import { Link } from "react-router-dom";
 import { AppLayout } from "@/components/layout/AppLayout";
-import { Grid3x3, Plane, Coins, Dice5, Bomb, Disc3 } from "lucide-react";
-
-const playable = [
-  { name: "Aviator", to: "/games/aviator", emoji: "✈️", icon: Plane, color: "from-rose-500 to-orange-500" },
-  { name: "Coin Flip", to: "/games/coin-flip", emoji: "🪙", icon: Coins, color: "from-yellow-500 to-amber-700" },
-  { name: "Dice Roll", to: "/games/dice", emoji: "🎲", icon: Dice5, color: "from-fuchsia-500 to-purple-700" },
-  { name: "Mines", to: "/games/mines", emoji: "💣", icon: Bomb, color: "from-orange-600 to-red-900" },
-  { name: "Lucky Wheel", to: "/games/wheel", emoji: "🎡", icon: Disc3, color: "from-cyan-500 to-blue-700" },
-  { name: "vFootball", to: "/league/vfootball", emoji: "⚽", icon: Grid3x3, color: "from-emerald-600 to-green-800" },
-];
-
-const Virtuals = () => (
-  <AppLayout>
-    <div className="bg-surface-dark text-surface-dark-foreground px-4 py-5">
-      <div className="flex items-center gap-2">
-        <Grid3x3 className="w-6 h-6 text-gold" />
-        <h1 className="text-2xl font-extrabold">Virtuals & Instant Games</h1>
-      </div>
-      <p className="text-white/70 text-sm mt-1">Play, win and cash out 24/7</p>
-    </div>
-    <div className="p-3 grid grid-cols-2 gap-3">
-      {playable.map((v) => (
-        <Link
-          key={v.name}
-          to={v.to}
-          className={`aspect-[4/3] rounded-xl bg-gradient-to-br ${v.color} text-white font-bold flex flex-col items-center justify-center gap-2 shadow-card hover:shadow-elevated hover:-translate-y-0.5 active:scale-95 transition`}
-        >
-          <span className="text-4xl">{v.emoji}</span>
-          <span className="text-sm text-center px-2 leading-tight">{v.name}</span>
-        </Link>
-      ))}
-    </div>
-  </AppLayout>
-);
-
+import { Button } from "@/components/ui/button";
+import { Trophy, ArrowRight } from "lucide-react";
+const Virtuals = () => <AppLayout><div className="reference-section-room"><div className="sportsbook-shell py-10"><h1 className="text-3xl font-extrabold">Scheduled Virtuals</h1><nav className="flex gap-4 mt-6 border-b border-surface-dark-muted"><Button asChild variant="ghost" className="text-success rounded-none border-b-2 border-success"><Link to="/league/vfootball">vFootball</Link></Button></nav><div className="py-12 text-center"><Trophy className="w-12 h-12 text-success mx-auto" /><h2 className="text-xl font-bold mt-4">vFootball fixtures</h2><Button asChild className="mt-5 bg-success text-success-foreground"><Link to="/league/vfootball">View scheduled matches <ArrowRight /></Link></Button></div><div className="border-t border-surface-dark-muted pt-6 flex justify-between items-center gap-4"><span className="font-bold">Casino & instant games</span><Button asChild variant="outline" className="bg-transparent"><Link to="/games">Open Games <ArrowRight /></Link></Button></div></div></div></AppLayout>;
 export default Virtuals;

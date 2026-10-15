@@ -23,7 +23,7 @@ export const BottomNav = () => {
           className="fixed bottom-20 right-4 z-40 w-14 h-14 rounded-full bg-success text-success-foreground shadow-elevated flex items-center justify-center"
         >
           <Receipt className="w-6 h-6" />
-          <span className="absolute -top-1 -right-1 min-w-6 h-6 px-1 rounded-full bg-white text-success text-xs font-bold flex items-center justify-center">
+          <span className="absolute -top-1 -right-1 min-w-6 h-6 px-1 rounded-full bg-card text-success text-xs font-bold flex items-center justify-center">
             {selections.length}
           </span>
         </NavLink>
@@ -38,7 +38,7 @@ export const BottomNav = () => {
               end={to === "/"}
               className={({ isActive }) =>
                 `flex flex-col items-center justify-center py-2 gap-1 text-[11px] font-medium transition-colors relative ${
-                  isActive ? "text-primary" : "text-white/70 hover:text-white"
+                  isActive ? "text-primary" : "text-surface-dark-foreground/70 hover:text-surface-dark-foreground"
                 }`
               }
             >
@@ -47,7 +47,7 @@ export const BottomNav = () => {
                   <div
                     className={`w-9 h-9 rounded-lg flex items-center justify-center ${
                       accent
-                        ? "bg-gradient-to-br from-violet-500 to-fuchsia-600 text-white"
+                        ? "bg-success text-success-foreground"
                         : ""
                     }`}
                   >

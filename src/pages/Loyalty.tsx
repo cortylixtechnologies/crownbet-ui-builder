@@ -1,0 +1,8 @@
+import { Crown, LockKeyhole, Gift, ChevronRight } from "lucide-react";
+import { Link } from "react-router-dom";
+import { AppLayout } from "@/components/layout/AppLayout";
+import { Button } from "@/components/ui/button";
+import casinoBanner from "@/assets/casino-banner.jpg";
+
+const Loyalty = () => <AppLayout><div className="reference-section-room py-10"><div className="max-w-sm mx-auto px-4"><section className="reference-section-hero"><img src={casinoBanner} alt="Casino chips and roulette" width={1536} height={512} /><div className="reference-section-hero-copy text-center"><Crown className="w-12 h-12 text-gold mx-auto" /><h1 className="text-2xl font-extrabold mt-3">Crown Loyalty</h1><p className="text-sm mt-2 opacity-70">Rewards</p></div></section><div className="reference-section-panel p-5"><div className="flex justify-around py-6">{["Iron", "Copper", "Bronze"].map((tier) => <div key={tier} className="text-center"><Crown className="w-9 h-9 text-gold mx-auto" /><span className="text-xs block mt-2">{tier}</span><LockKeyhole className="w-3 h-3 mx-auto mt-2 opacity-50" /></div>)}</div><p className="text-sm text-center opacity-70">Loyalty rewards are not available yet.</p><div className="border-t border-surface-dark-muted mt-6 pt-6 text-center"><Gift className="mx-auto w-8 h-8 text-gold" /><h2 className="font-bold mt-3">Latest rewards</h2><p className="text-xs mt-2 opacity-60">No rewards to claim.</p></div><Button asChild variant="outline" className="w-full mt-6 bg-transparent"><Link to="/promotions">View active promotions <ChevronRight /></Link></Button></div></div></div></AppLayout>;
+export default Loyalty;

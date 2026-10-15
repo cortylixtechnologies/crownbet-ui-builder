@@ -8,7 +8,7 @@ import { sportsCatalog, slugify, localISODate } from "@/data/mockData";
 
 // Sport-level pages map to the stored sport name
 const SPORT_SLUGS: Record<string, string> = {
-  football: "soccer", soccer: "soccer", basketball: "basketball", tennis: "tennis",
+  nfl: "american football", mlb: "baseball", football: "soccer", soccer: "soccer", basketball: "basketball", tennis: "tennis",
   "ice-hockey": "ice hockey", cricket: "cricket", rugby: "rugby", baseball: "baseball",
   "american-football": "american football", efootball: "esports", esports: "esports",
   "table-tennis": "table tennis", handball: "handball", volleyball: "volleyball",

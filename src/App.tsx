@@ -11,6 +11,8 @@ import { AuthGateProvider } from "@/context/AuthGateContext";
 import Index from "./pages/Index";
 import Menu from "./pages/Menu";
 import Games from "./pages/Games";
+import Loyalty from "./pages/Loyalty";
+import AppAccess from "./pages/AppAccess";
 import OpenBets from "./pages/OpenBets";
 import Me from "./pages/Me";
 import Login from "./pages/Login";
@@ -71,6 +73,8 @@ const App = () => (
 
               <Route path="/menu" element={<Menu />} />
               <Route path="/games" element={<Games />} />
+              <Route path="/loyalty" element={<Loyalty />} />
+              <Route path="/app" element={<AppAccess />} />
               <Route path="/games/aviator" element={<Aviator />} />
               <Route path="/games/coin-flip" element={<CoinFlip />} />
               <Route path="/games/dice" element={<Dice />} />

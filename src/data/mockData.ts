@@ -30,6 +30,9 @@ export const sportsCatalog: SportLeagues[] = [
   { name: "Ice Hockey", count: 22, leagues: ["NHL", "KHL", "SHL", "Liiga"] },
   { name: "Handball", count: 14, leagues: ["EHF Champions League", "Bundesliga Handball", "LIQUI MOLY"] },
   { name: "Volleyball", count: 12, leagues: ["CEV Champions League", "Italy SuperLega", "PlusLiga"] },
+  { name: "American Football", count: 0, leagues: ["NFL", "College Football"] },
+  { name: "Baseball", count: 0, leagues: ["MLB"] },
+  { name: "Rugby", count: 0, leagues: ["Rugby Union", "Rugby League"] },
   { name: "Cricket", count: 9, leagues: ["IPL", "Big Bash", "T20 Blast", "ICC World Cup"] },
 ];
 

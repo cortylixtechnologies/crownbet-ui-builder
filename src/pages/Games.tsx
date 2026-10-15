@@ -1,82 +1,74 @@
 import { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { AppLayout } from "@/components/layout/AppLayout";
-import { Search, Home, Megaphone, ChevronDown } from "lucide-react";
+import { Search, Grid2X2, Flame, Sparkles, Rocket, Zap, Disc3, Dices, Spade, Hash, Ticket, Gamepad2, LockKeyhole, ArrowRight } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { supabase } from "@/integrations/supabase/client";
+import { useAuthGate } from "@/context/AuthGateContext";
+import { gameCatalog, filterCatalog, CatalogGame } from "@/data/gameCatalog";
+import { GameCover } from "@/components/games/GameCover";
+import casinoBanner from "@/assets/casino-banner.jpg";
 
-type DbGame = { id: string; slug: string; title: string; color: string; emoji: string; category: string };
+const categories = [
+  { name: "All Games", icon: Grid2X2 }, { name: "Popular", icon: Flame }, { name: "New", icon: Sparkles },
+  { name: "Crash", icon: Rocket }, { name: "Quick", icon: Zap }, { name: "Wheel", icon: Disc3 },
+  { name: "Slots", icon: Gamepad2 }, { name: "Dice", icon: Dices }, { name: "Card Games", icon: Spade },
+  { name: "Numbers", icon: Hash }, { name: "Playable", icon: Gamepad2 },
+];
 
 const Games = () => {
-  const [q, setQ] = useState("");
-  const [games, setGames] = useState<DbGame[]>([]);
+  const [query, setQuery] = useState("");
+  const [category, setCategory] = useState("All Games");
+  const [preview, setPreview] = useState<CatalogGame | null>(null);
+  const [activeSlugs, setActiveSlugs] = useState<string[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState(false);
+  const navigate = useNavigate();
+  const { requireAuth } = useAuthGate();
+  const load = async () => {
+    setLoading(true);
+    const { data, error } = await supabase.from("games").select("slug").eq("active", true).eq("maintenance", false);
+    setActiveSlugs((data ?? []).map((game) => game.slug));
+    setLoadError(Boolean(error));
+    setLoading(false);
+  };
+  useEffect(() => { void load(); }, []);
+  const catalog = gameCatalog.map((game) => ({ ...game, playable: game.playable && activeSlugs.includes(game.slug) }));
+  const visible = filterCatalog(catalog, category, query);
+  const launch = (game: CatalogGame) => {
+    if (!game.playable) { setPreview(game); return; }
+    requireAuth(() => navigate(`/games/${game.slug}`), `Log in or register to play ${game.title}.`);
+  };
 
-  useEffect(() => {
-    supabase.from("games").select("*").eq("active", true).order("sort_order")
-      .then(({ data }) => setGames((data ?? []) as DbGame[]));
-  }, []);
-
-  const grouped = games.reduce<Record<string, DbGame[]>>((acc, g) => {
-    (acc[g.category] ||= []).push(g);
-    return acc;
-  }, {});
-
-  const filter = (list: DbGame[]) =>
-    !q ? list : list.filter((g) => g.title.toLowerCase().includes(q.toLowerCase()));
-
-  return (
-    <AppLayout headerVariant="games">
-      <div className="bg-gradient-to-r from-emerald-900 to-emerald-700 text-white px-4 py-3 flex items-center gap-2 text-sm">
-        <Megaphone className="w-5 h-5 text-gold" />
-        <span>0***8 won <span className="text-gold font-bold">TZS 1,000.00</span> in Aviator</span>
-        <button className="ml-auto bg-gold text-gold-foreground px-3 py-1 rounded-full text-xs font-bold flex items-center gap-1">
-          Play <ChevronDown className="w-3 h-3 rotate-[-90deg]" />
-        </button>
-      </div>
-
-      <div className="bg-surface-dark text-surface-dark-foreground min-h-[80vh] pb-6">
-        <div className="px-4 pt-4 flex gap-2">
-          <div className="flex-1 relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/60" />
-            <input value={q} onChange={(e) => setQ(e.target.value)}
-              placeholder="Search games"
-              className="w-full bg-surface-dark-muted text-white placeholder:text-white/50 rounded-full pl-9 pr-4 py-2.5 text-sm outline-none border border-white/10 focus:border-primary" />
-          </div>
-          <button className="flex items-center gap-1.5 bg-surface-dark-muted px-4 py-2.5 rounded-full text-sm border border-white/10">
-            <Home className="w-4 h-4" /> Home <ChevronDown className="w-4 h-4" />
-          </button>
+  return <AppLayout headerVariant="games">
+    <div className="games-room">
+      <div className="sportsbook-shell games-layout">
+        <aside className="games-category-nav" aria-label="Game categories">
+          {categories.map(({ name, icon: Icon }) => <Button key={name} variant="ghost" onClick={() => setCategory(name)} aria-pressed={category === name} className={`games-category ${category === name ? "games-category-active" : ""}`}><Icon />{name}</Button>)}
+          <Button asChild variant="ghost" className="games-category"><Link to="/lottery"><Ticket />Lottery</Link></Button>
+          <Button asChild variant="ghost" className="games-category"><Link to="/jackpot"><Sparkles />Jackpot</Link></Button>
+        </aside>
+        <div className="min-w-0">
+          <section className="games-banner">
+            <img src={casinoBanner} alt="Red airplane, roulette and playing cards" width={1536} height={512} className="absolute inset-0 w-full h-full object-cover" />
+            <div className="games-banner-copy"><span className="text-gold text-xs font-bold uppercase">Crown Games</span><h1 className="text-3xl font-extrabold mt-2">Your next favourite game</h1><p className="text-sm mt-2">Aviator · Casino · Instant games</p><Button onClick={() => setCategory("Playable")} className="mt-5 bg-success text-success-foreground hover:bg-success/90 font-bold">Play now <ArrowRight /></Button></div>
+          </section>
+          <section className="games-featured" aria-label="Featured games">
+            <h2 className="text-lg font-bold mb-3 text-gold">Crown favourites</h2>
+            <div className="grid grid-cols-3 gap-3">{catalog.filter((game) => ["aviator", "coin-flip", "wheel"].includes(game.slug)).map((game) => <Button key={game.slug} variant="ghost" className="games-feature-item" onClick={() => launch(game)}><div className="w-14 shrink-0 rounded overflow-hidden"><GameCover slug={game.slug} title={game.title} /></div><span className="min-w-0 text-left"><span className="block font-bold whitespace-normal">{game.title}</span><span className="block text-xs text-success mt-1">{game.playable ? "Play" : "Unavailable"}</span></span></Button>)}</div>
+          </section>
+          <section className="games-catalog">
+            <div className="flex flex-wrap items-center justify-between gap-4 mb-5"><h2 className="text-xl font-extrabold">{category} <span className="text-sm font-normal opacity-60">({visible.length})</span></h2><div className="relative w-full sm:w-72"><Search className="absolute left-3 top-3 w-4 h-4 opacity-60" /><Input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Search for your favourite game" aria-label="Search games" className="games-search pl-9" /></div></div>
+            {loadError && <div className="mb-4 text-sm flex gap-3 items-center">Playable games could not be loaded.<Button size="sm" variant="outline" onClick={load}>Retry</Button></div>}
+            <div className="games-grid">{visible.map((game) => <Button variant="ghost" key={game.slug} onClick={() => launch(game)} className="game-tile" aria-label={`${game.title}${game.playable ? ", play" : ", preview"}`}><GameCover slug={game.slug} title={game.title} /><span className="game-tile-top">{game.badge && <span className="game-badge">{game.badge}</span>}<span className="game-availability">{loading ? "Loading" : game.playable ? "Play now" : "Coming soon"}</span></span><span className="game-tile-footer">{game.title}{game.playable ? <ArrowRight className="w-4 h-4" /> : <LockKeyhole className="w-3 h-3" />}</span></Button>)}</div>
+            {visible.length === 0 && <p className="text-center py-12 opacity-70">No games match your search.</p>}
+          </section>
         </div>
-
-        {Object.entries(grouped).map(([category, list]) => {
-          const visible = filter(list);
-          if (!visible.length) return null;
-          return (
-            <section key={category} className="mt-6 px-4">
-              <div className="flex items-center justify-between mb-3">
-                <h2 className="text-lg font-bold">{category}</h2>
-                <button className="text-success text-xs font-bold bg-success/10 px-3 py-1 rounded-full">
-                  Show All
-                </button>
-              </div>
-              <div className="grid grid-cols-3 gap-3">
-                {visible.map((g) => (
-                  <Link key={g.id} to={`/games/${g.slug}`}
-                    className={`aspect-square rounded-xl bg-gradient-to-br ${g.color} shadow-card relative overflow-hidden flex flex-col items-center justify-center p-2 hover:shadow-elevated hover:-translate-y-0.5 active:scale-95 transition`}>
-                    <div className="text-4xl drop-shadow">{g.emoji}</div>
-                    <div className="mt-1 text-white font-extrabold text-xs text-center drop-shadow leading-tight">
-                      {g.title}
-                    </div>
-                  </Link>
-                ))}
-              </div>
-            </section>
-          );
-        })}
-        {games.length === 0 && (
-          <p className="text-center text-white/60 py-12">No games available.</p>
-        )}
       </div>
-    </AppLayout>
-  );
+    </div>
+    <Dialog open={Boolean(preview)} onOpenChange={(open) => { if (!open) setPreview(null); }}><DialogContent className="max-w-sm"><DialogHeader><DialogTitle>{preview?.title}</DialogTitle><DialogDescription>{preview && gameCatalog.find((game) => game.slug === preview.slug)?.playable ? "This game is currently unavailable. No stake will be taken." : "This provider title is a preview and is not available to play yet. No stake will be taken."}</DialogDescription></DialogHeader>{preview && <div className="w-48 mx-auto rounded overflow-hidden"><GameCover slug={preview.slug} title={preview.title} /></div>}<Button onClick={() => { setPreview(null); setCategory("Playable"); }}>Browse playable games</Button></DialogContent></Dialog>
+  </AppLayout>;
 };
-
 export default Games;
