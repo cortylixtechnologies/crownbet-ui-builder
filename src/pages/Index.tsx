@@ -41,11 +41,11 @@ const Index = () => {
   const { addSelection } = useBetslip();
   const navigate = useNavigate();
   const live = matches.filter((m) => m.live);
-  const featured = matches;
+  const featured = matches.filter((match) => (match.sport ?? "soccer") === "soccer");
 
   return (
     <AppLayout>
-      <DesktopHome matches={featured} promos={promos as any} />
+      <DesktopHome matches={matches} promos={promos as any} />
 
       <div className="lg:hidden">
       <section className="relative overflow-hidden bg-surface-dark text-surface-dark-foreground min-h-[180px]">
@@ -136,7 +136,7 @@ const Index = () => {
           <Button variant="ghost" onClick={() => requireAuth(() => navigate("/live"), "Sign up or log in to view live matches.")} className="text-xl font-bold hover:text-success px-0">Live</Button>
           <span className="text-white/40">|</span>
           {["Football", "vFootball", "Basketball", "Tennis", "eFootball"].map((s, i) => (
-            <Link key={s} to={s === "vFootball" ? "/virtuals" : "/live"} onClick={(event) => {
+            <Link key={s} to={s === "vFootball" ? "/league/vfootball" : "/live"} onClick={(event) => {
               if (s !== "vFootball") { event.preventDefault(); requireAuth(() => navigate("/live"), "Sign up or log in to view live matches."); }
             }}
               className={`text-base font-bold whitespace-nowrap transition-colors hover:text-success ${

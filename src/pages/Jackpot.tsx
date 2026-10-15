@@ -1,6 +1,8 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { AppLayout } from "@/components/layout/AppLayout";
+import footballPromo from "@/assets/football-promo.jpg";
+import { SectionBetslip } from "@/components/layout/SectionBetslip";
 import { Trophy, Crown } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -28,19 +30,16 @@ const Jackpot = () => {
 
   return (
     <AppLayout>
-      <div className="bg-gradient-to-br from-amber-500 via-orange-600 to-red-700 text-white px-4 py-8 text-center">
-        <Trophy className="w-12 h-12 text-gold mx-auto" />
-        <h1 className="text-3xl font-extrabold mt-2">Crown Jackpots</h1>
-        <p className="mt-1 text-sm text-white/80">Predict every match. Win it all.</p>
-      </div>
-      <div className="p-3 space-y-3">
-        {jps.length === 0 && <p className="text-center text-sm text-muted-foreground py-8">No live jackpots yet.</p>}
+      <div className="reference-section-room"><div className="sportsbook-shell">
+      <section className="reference-section-hero"><img src={footballPromo} alt="Football jackpot match day" width={1536} height={768} /><div className="reference-section-hero-copy"><h1 className="text-3xl font-extrabold">Crown Jackpots</h1><p className="text-success font-bold mt-3">Predict the matches. Compete for the prize.</p>{jps[0] && <p className="text-3xl font-extrabold text-gold mt-3">TZS {Number(jps[0].prize).toLocaleString()}</p>}</div></section>
+      <div className="reference-section-columns"><nav className="reference-section-panel"><Link to="/jackpot" className="block px-4 py-3 bg-success text-success-foreground font-bold">Open jackpots</Link><Link to="/results" className="block px-4 py-3 text-sm">Match results</Link></nav><div className="space-y-3">
+        {jps.length === 0 && <p className="text-center text-sm text-surface-dark-foreground/60 py-8">No live jackpots yet.</p>}
         {jps.map((j) => (
-          <div key={j.id} className="bg-card rounded-xl shadow-card p-4">
+          <div key={j.id} className="reference-section-panel rounded-sm p-4">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <Crown className="w-5 h-5 text-gold" />
-                <h2 className="font-extrabold text-foreground">{j.name}</h2>
+                <h2 className="font-extrabold text-surface-dark-foreground">{j.name}</h2>
               </div>
               <span className="text-xs px-2 py-1 rounded-full bg-success/10 text-success font-bold">
                 {counts[j.id] ?? 0} games
@@ -49,7 +48,7 @@ const Jackpot = () => {
             <p className="mt-3 text-2xl font-extrabold text-primary">
               TZS {Number(j.prize).toLocaleString()}
             </p>
-            <p className="text-xs text-muted-foreground">
+            <p className="text-xs text-surface-dark-foreground/60">
               Entry TZS {Number(j.entry_fee).toLocaleString()} · Closes {new Date(j.deadline).toLocaleString()}
             </p>
             <Link
@@ -60,7 +59,7 @@ const Jackpot = () => {
             </Link>
           </div>
         ))}
-      </div>
+      </div><SectionBetslip /></div></div></div>
     </AppLayout>
   );
 };
