@@ -1,5 +1,5 @@
-import { Link, NavLink, useNavigate } from "react-router-dom";
-import { Search, Crown, ChevronDown, Wallet, LogOut } from "lucide-react";
+import { Link, NavLink, useNavigate, useLocation } from "react-router-dom";
+import { Search, Crown, ChevronDown, Wallet, LogOut, Settings } from "lucide-react";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -16,22 +16,26 @@ const mainNav = [
   { label: "Livescore", to: "/livescore" },
   { label: "Results", to: "/results" },
   { label: "Promotions", to: "/promotions" },
-  { label: "Lottery", to: "/lottery" },
+  { label: "Crown Loyalty", to: "/loyalty" },
+  { label: "App", to: "/app" },
 ];
 
 const sportsNav = [
   { label: "Home", to: "/" },
   { label: "Football", to: "/league/football" },
-  { label: "vFootball", to: "/virtuals" },
+  { label: "vFootball", to: "/league/vfootball" },
   { label: "Basketball", to: "/league/basketball" },
   { label: "Tennis", to: "/league/tennis" },
   { label: "eFootball", to: "/league/efootball" },
   { label: "Table Tennis", to: "/league/table-tennis" },
   { label: "Ice Hockey", to: "/league/ice-hockey" },
+  { label: "NFL", to: "/league/american-football" },
 ];
 
 export const Header = ({ variant = "default" }: { variant?: "default" | "games" | "search" }) => {
   const navigate = useNavigate();
+  const { pathname } = useLocation();
+  const sportsPage = pathname === "/" || pathname.startsWith("/league") || pathname === "/menu";
   const { session, profile, signIn, signOut } = useAuth();
   const { requireAuth } = useAuthGate();
   const [email, setEmail] = useState("");
@@ -48,7 +52,7 @@ export const Header = ({ variant = "default" }: { variant?: "default" | "games" 
   };
 
   return (
-    <header className="relative z-40">
+    <header className="relative z-40 reference-header">
       {/* ---------- Mobile bar ---------- */}
       <div className="lg:hidden bg-primary text-primary-foreground">
         <div className="flex items-center justify-between px-4 py-3 gap-3">
@@ -86,13 +90,13 @@ export const Header = ({ variant = "default" }: { variant?: "default" | "games" 
 
       {/* ---------- Desktop bar ---------- */}
       <div className="hidden lg:block bg-primary text-primary-foreground">
-        <div className="sportsbook-shell pt-3">
-          <div className="flex items-start justify-between gap-6">
+        <div className="sportsbook-shell pt-5">
+          <div className="flex items-start justify-between gap-6 pb-3">
             <Link to="/" className="flex items-center gap-2 font-extrabold text-3xl">
               <Crown className="w-8 h-8 text-gold fill-gold" />
               <span>Crown<span className="text-gold">Bet</span></span>
               <span className="ml-2 flex items-center gap-1 text-sm font-semibold opacity-90">
-                🇹🇿 Tanzania <ChevronDown className="w-4 h-4" />
+                🇹🇿 Tanzania <Settings className="w-5 h-5 ml-2" /> <ChevronDown className="w-4 h-4" />
               </span>
             </Link>
 
@@ -139,7 +143,7 @@ export const Header = ({ variant = "default" }: { variant?: "default" | "games" 
           </div>
 
           {/* main nav */}
-          <nav className="mt-2 flex items-end gap-1">
+          <nav aria-label="Main navigation" className="reference-main-nav">
             {mainNav.map((n) => (
               <NavLink
                 key={n.label}
@@ -152,8 +156,8 @@ export const Header = ({ variant = "default" }: { variant?: "default" | "games" 
                 }}
                 end={n.to === "/"}
                 className={({ isActive }) =>
-                  `px-3 py-2.5 text-xs font-bold rounded-none transition-colors ${
-                    isActive ? "bg-card text-primary" : "text-primary-foreground/90 hover:bg-primary-foreground/10"
+                  `reference-nav-link ${
+                    (isActive || (n.to === "/" && sportsPage)) ? "reference-nav-active" : ""
                   }`
                 }
               >
@@ -168,7 +172,10 @@ export const Header = ({ variant = "default" }: { variant?: "default" | "games" 
       </div>
 
       {/* sports sub nav (desktop) */}
-      <div className="bg-card border-b border-border">
+      <nav aria-label="Mobile main navigation" className="lg:hidden bg-primary text-primary-foreground flex overflow-x-auto scrollbar-hide px-2">
+        {mainNav.map((item) => <NavLink key={item.to} to={item.to} end={item.to === "/"} onClick={(event) => { if (item.to === "/live") { event.preventDefault(); requireAuth(() => navigate("/live"), "Sign up or log in to view live matches."); } }} className={({ isActive }) => `px-4 py-3 text-xs font-bold whitespace-nowrap border-b-2 ${isActive ? "border-primary-foreground bg-primary-dark" : "border-transparent"}`}>{item.label}</NavLink>)}
+      </nav>
+      {sportsPage && <div className="bg-card border-b border-border">
         <div className="sportsbook-shell flex items-center gap-6 overflow-x-auto scrollbar-hide">
           {sportsNav.map((s, i) => (
             <NavLink
@@ -190,7 +197,7 @@ export const Header = ({ variant = "default" }: { variant?: "default" | "games" 
             More Sports <ChevronDown className="w-4 h-4" />
           </Link>
         </div>
-      </div>
+      </div>}
     </header>
   );
 };
